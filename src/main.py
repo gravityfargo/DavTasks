@@ -140,11 +140,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
 
             self.verticalLayoutTodosFrame.addWidget(self.frameTodo)
-
             i = i + 1
-        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
-        self.verticalLayoutTodosFrame.addItem(spacerItem1)
 
+        self.spacerItem = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.verticalLayoutTodosFrame.addItem(self.spacerItem)
+            
     def populateTags(self):
         readLocalFile("tags")
         tags = readLocalFile.data
@@ -178,7 +178,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if widget != None:
                     widget.deleteLater()
             print("clearMainWindow")
-
+            
+        self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
         self.todosFrame.update()
 
     def pullUpstreamData(self):
