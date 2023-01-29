@@ -1,11 +1,13 @@
 import sys
 from PyQt6 import *
+from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from davconnect import *
 from fileutils import *
 from syncutils import *
 from gui.edittask import *
+from gui.edittags import *
 from gui.mainwindow import Ui_MainWindow
 from gui.settingsdialog import Ui_DialogSettings
 
@@ -22,17 +24,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populateTags()
         self.populateTable()
 
-        self.pushButtonRefresh.clicked.connect(self.pullLocalData)
         self.pushButtonAdd.clicked.connect(self.taskDialog)
+        self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
+        self.pushButtonRefresh.clicked.connect(self.pullLocalData)
         self.pushButtonSync.clicked.connect(self.pullUpstreamData)
-        self.pushButtonClear.clicked.connect(self.clearMainWindow)
 
     def populateTable(self):
         readLocalFile("todos")
         todos = readLocalFile.data
+
+        readLocalFile("tags")
+        tags = readLocalFile.data
         i = 0
 
+        self.verticalLayoutTodosFrame.setSpacing(2)
         for t in todos.values():
             uid = t["UID"]
             summary = t["SUMMARY"]
@@ -47,22 +53,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frameTodo = QtWidgets.QWidget(self.todosFrame)
             self.frameTodo.setStyleSheet("background-color: rgb(51, 51, 51);")
             self.frameTodo.setObjectName(uid)
-            self.frameTodo.setMinimumSize(QtCore.QSize(0, 40))
+            self.frameTodo.setMinimumSize(QtCore.QSize(0, 50))
             self.frameTodo.setMaximumSize(QtCore.QSize(16777215, 50))
 
             self.gridLayoutTodo = QtWidgets.QGridLayout(self.frameTodo)
             self.gridLayoutTodo.setContentsMargins(0, 0, 0, 0)
 
             self.frameTag = QtWidgets.QFrame()
-            self.frameTag.setStyleSheet("background-color: rgb(90, 90, 90);")
             self.gridLayoutTodo.addWidget(self.frameTag, 0, 0, 1, 1)
 
-            self.labelTag = QtWidgets.QLabel(self.frameTag)
-            self.labelTag.setMargin(10)
+            self.gridLayoutTag = QtWidgets.QGridLayout(self.frameTag)
+            self.gridLayoutTag.setContentsMargins(0, 0, 0, 0)
+
+            self.frameTagColor = QtWidgets.QFrame()
+            self.frameTagColor.setMaximumSize(QtCore.QSize(10, 50))
+            self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
+
+            self.labelTag = QtWidgets.QLabel()
+
+            self.gridLayoutTag.addWidget(self.labelTag, 0, 1, 1, 1)
 
             if "CATEGORIES" in t:
                 tag = t["CATEGORIES"]
                 self.labelTag.setText(tag)
+                if tag in tags.keys() and len(tags[tag]) > 0:
+                    self.frameTagColor.setStyleSheet(
+                        "background-color: " + tags[tag] + ";")
 
             self.frameSummary = QtWidgets.QFrame()
             self.gridLayoutSummary = QtWidgets.QGridLayout(self.frameSummary)
@@ -79,12 +95,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.frameDuedays = QtWidgets.QFrame()
             self.gridLayoutTodo.addWidget(self.frameDuedays, 0, 2, 1, 1)
+            
+            self.gridLayoutCountdown = QtWidgets.QGridLayout(self.frameDuedays)
+            self.gridLayoutCountdown.setContentsMargins(0, 0, 0, 0)
 
-            self.labelCountdown = QtWidgets.QLabel(self.frameDuedays)
-            self.labelCountdown.setStyleSheet("color: rgb(0, 0, 0);")
-            self.labelCountdown.setMargin(1)
+            self.labelCountdown = QtWidgets.QLabel()
+            font = QtGui.QFont()
+            font.setBold(True)
+            self.labelCountdown.setFont(font)
+            self.labelCountdown.setStyleSheet("color: rgb(0, 0, 0); font: 12pt;")
+            self.gridLayoutCountdown.addWidget(self.labelCountdown, 0, 0, 1, 1)
             self.labelCountdown.setAlignment(
-                QtCore.Qt.AlignmentFlag.AlignCenter)
+                QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
+            
+            
 
             self.frameDate = QtWidgets.QFrame()
             self.gridLayoutTodo.addWidget(self.frameDate, 0, 3, 1, 1)
@@ -143,23 +167,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.verticalLayoutTodosFrame.addWidget(self.frameTodo)
             i = i + 1
 
-        self.spacerItem = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.spacerItem = QSpacerItem(
+            20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.verticalLayoutTodosFrame.addItem(self.spacerItem)
-            
+
     def populateTags(self):
         readLocalFile("tags")
         tags = readLocalFile.data
-        item = QListWidgetItem()
-        for t in tags:
-            if type(t) == dict:
-                self.listWidgetTags.addItem("No Data")
-            else:
-                item.setText(t)
-                item.setForeground(QColor().black())
 
-                if len(tags[t]) != 0:
-                    item.setBackground(QColor(tags[t]))
-                self.listWidgetTags.addItem(item)
+        for t in tags:
+            item = QListWidgetItem()
+            item.setText(t)
+
+            if len(tags[t]) != 0:
+                item.setForeground(QColor().black())
+                item.setBackground(QColor(tags[t]))
+            self.listWidgetTags.addItem(item)
+        self.listWidgetTags.sortItems(Qt.SortOrder.AscendingOrder)
 
     def clearMainWindow(self):
         self.listWidgetTags.clear()
@@ -179,7 +203,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if widget != None:
                 widget.deleteLater()
         print("clearMainWindow")
-            
+
         self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
         self.todosFrame.update()
 
@@ -193,6 +217,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
+
+    def editTagsDialog(self):
+        dlg = EditTasksDialog()
+        if dlg.exec():
+            self.pullLocalData()
 
     def settingsDialog(self):
         dlg = SettingsDialog()
@@ -210,39 +239,69 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if dlg.exec():
             self.pullLocalData()
 
-class SettingsDialog(QDialog, Ui_DialogSettings):
+
+class EditTasksDialog(QDialog, Ui_EditTagDialog):
     def __init__(self, *args, obj=None, **kwargs):
-        super(SettingsDialog, self).__init__(*args, **kwargs)
+        super(EditTasksDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        self.populateTags()
-        self.populateForm()
-
-        self.pushButtonTest.clicked.connect(self.onColorPicker)
-        self.pushButtonTagApply.clicked.connect(self.saveTagColor)
-
-    def populateTags(self):
         readLocalFile("tags")
-        tags = readLocalFile.data
-        for t in tags:
-            self.comboBoxTags.addItem(t)
 
-    def populateForm(self):
-        readLocalFile("settings")
-        settings = readLocalFile.data
-        if settings["URL"] != "":
-            self.lineEditURL.setText(settings["URL"])
-
-        if settings["USERNAME"] != "":
-            self.lineEditUser.setText(settings["USERNAME"])
-
-        if settings["PASSWORD"] != "":
-            self.lineEditPass.setText(settings["PASSWORD"])
+        self.tags = readLocalFile.data
+        self.pushButtonColorPicker.clicked.connect(self.onColorPicker)
+        self.buttonBox.accepted.connect(self.saveTagColor)
+        self.populateTags()
+        self.setPreviewColor(self.comboBoxTags.currentText())
+        self.comboBoxTags.currentTextChanged.connect(
+            lambda: self.setPreviewColor(self.comboBoxTags.currentText()))
 
     def onColorPicker(self):
         color = QColorDialog.getColor()
         self.widgetColorPreview.setStyleSheet(
             "background-color:" + color.name() + ";")
         self.widgetColorPreview.setObjectName(color.name())
+
+    def populateTags(self):
+        for t in self.tags:
+            self.comboBoxTags.addItem(t)
+
+    def setPreviewColor(self, tag):
+        if tag in self.tags.keys():
+            if len(self.tags[tag]) > 0:
+                self.widgetColorPreview.setStyleSheet(
+                    "background-color: " + self.tags[tag] + ";")
+            else:
+                self.widgetColorPreview.setStyleSheet(
+                    "background-color: rgb(51, 51, 51);")
+
+    def saveTagColor(self):
+        inputTag = self.comboBoxTags.currentText()
+        newSettings = {}
+        for x, y in self.tags.items():
+            if x == inputTag:
+                newSettings[x] = self.widgetColorPreview.objectName()
+        changeLocalData(newSettings, "tags")
+        self.accept()
+
+
+class SettingsDialog(QDialog, Ui_DialogSettings):
+    def __init__(self, *args, obj=None, **kwargs):
+        super(SettingsDialog, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+        readLocalFile("settings")
+        self.settings = readLocalFile.data
+
+        self.populateTags()
+        self.populateForm()
+
+    def populateForm(self):
+        if self.settings["URL"] != "":
+            self.lineEditURL.setText(self.settings["URL"])
+
+        if self.settings["USERNAME"] != "":
+            self.lineEditUser.setText(self.settings["USERNAME"])
+
+        if self.settings["PASSWORD"] != "":
+            self.lineEditPass.setText(self.settings["PASSWORD"])
 
     def saveServerSettings(self):
         newSettings = {
@@ -251,36 +310,30 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
             "PASSWORD": ""
         }
 
-    def saveTagColor(self):
-        readLocalFile("tags")
-        tags = readLocalFile.data
-        inputTag = self.comboBoxTags.currentText()
-        newSettings = {}
-        for x, y in tags.items():
-            if x == inputTag:
-                newSettings[x] = self.widgetColorPreview.objectName()
-        changeLocalData(newSettings, "tags")
-        super(SettingsDialog, self).reject()
-
-    def removeTagColor(self):
-        n = 0
-
 
 class TaskDialog(QDialog, Ui_EditTaskDialog):
     def __init__(self, uid, *args, obj=None, **kwargs):
         super(TaskDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
+        readLocalFile("todos")
+        self.todos = readLocalFile.data
+
+        readLocalFile("tags")
+        self.tags = readLocalFile.data
+
         saveButton = QPushButton("Save")
         deleteButton = QPushButton("Delete")
         applyButton = QPushButton("Apply")
 
         if uid == None:
+            self.setWindowTitle("DAV Tasks - New Task")
             self.buttonBox.addButton(
                 saveButton, self.buttonBox.ButtonRole.YesRole)
             self.populateTags()
             self.comboBoxTags.setCurrentText("")
         else:
+            self.setWindowTitle("DAV Tasks - Edit Task")
             self.buttonBox.addButton(
                 deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
             self.buttonBox.addButton(
@@ -320,13 +373,10 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             self.dateEdit.setEnabled(True)
 
     def populateForm(self, uid):
-
-        readLocalFile("todos")
-        todos = readLocalFile.data
         currentDue = None
         keyUID = "UID"
 
-        for t in todos.values():
+        for t in self.todos.values():
             if keyUID in t.keys():
                 if t[keyUID] == uid:
 
@@ -351,10 +401,10 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                     self.lineEditSummary.setText(t["SUMMARY"])
 
     def populateTags(self):
-        readLocalFile("tags")
-        tags = readLocalFile.data
-        for t in tags:
+
+        for t in self.tags:
             self.comboBoxTags.addItem(t)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
