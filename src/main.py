@@ -169,15 +169,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.uidMover = None
             print("clearMainWindow - SingleTask")
 
-        elif self.uidMover == None:
-            readLocalFile("todos")
-            todos = readLocalFile.data
-            for t in todos.values():
-                uid = t["UID"]
-                widget = self.todosFrame.findChild(QWidget, uid)
-                if widget != None:
-                    widget.deleteLater()
-            print("clearMainWindow")
+        # elif self.uidMover == None:
+        readLocalFile("todos")
+        todos = readLocalFile.data
+        for t in todos.values():
+            uid = t["UID"]
+            widget = self.todosFrame.findChild(QWidget, uid)
+            if widget != None:
+                widget.deleteLater()
+        print("clearMainWindow")
             
         self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
         self.todosFrame.update()
