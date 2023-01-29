@@ -45,10 +45,8 @@ def getCalendars():
 #     except caldav.error.NotFoundError:
 #         print("Couldnt find the calendar.")
      
-     # This function clears all local tags and todos in json and replaces them with the server version
+     # pulls raw caldav data from server and formats into a dict
 def pullUpstreamData():
-    # changeLocalData(None, "todos")
-    # changeLocalData(None, "tags")
     readLocalFile("settings")
     settings = readLocalFile.data
     serverConnect()
@@ -78,13 +76,13 @@ def pullUpstreamData():
                     item = e.split(":", 1)                
                     if len(item) == 2:
                         a_Dict.update({item[0]: item[1]})
+                        a_Dict["INCALENDAR"] =  cal
+                        
                     else:
                         nope = 1
                 finalTaskDict.update({i: a_Dict})
                 i = i + 1
-                rawTagsList.append(a_Dict.get("CATEGORIES"))     
-                # changeLocalData(finalTaskDict, "todos")
-                
+                rawTagsList.append(a_Dict.get("CATEGORIES"))   
                 
             # remove 'None' values
             for n in rawTagsList:
@@ -97,8 +95,6 @@ def pullUpstreamData():
                 for t in tags:
                     finalTagsDict[t] = intermediate_Tag_Dict
                 i = i + 1
-            
-            # changeLocalData(finalTagsDict, "tags")
 
     return finalTaskDict, finalTagsDict 
 
