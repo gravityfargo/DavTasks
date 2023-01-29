@@ -56,45 +56,46 @@ def pullUpstreamData():
         finalTaskDict = {}
         finalTagsDict = {}
 
+        i = 0
+        j = 0
         for cal in calendars:
-            
+            print(cal)
             my_tasklist = serverConnect.my_principal.calendar(name=cal)
             todos = my_tasklist.todos()   
             
             rawTagsList = []
             removedNoneTagsList = []
             intermediate_Tag_Dict = {}
-
-            i = 0
+            
+            
             # DUE;TZID=America/New_York:20230207T140000
             # I need to add another split function specifically for the semicolons for recursion
             # Formats the raw caldav data into a usable dict
             for a in todos:
-                a_split = a.data.split('\n')
                 a_Dict = {}
-                for e in a_split:
-                    item = e.split(":", 1)                
-                    if len(item) == 2:
-                        a_Dict.update({item[0]: item[1]})
-                        a_Dict["INCALENDAR"] =  cal
-                        
-                    else:
-                        nope = 1
-                finalTaskDict.update({i: a_Dict})
-                i = i + 1
-                rawTagsList.append(a_Dict.get("CATEGORIES"))   
+                a_split = a.data.split('\n')
                 
+                for e in a_split:
+                    item = e.split(":", 1)          
+                    if len(item) == 2:
+                        a_Dict[str(item[0])] = str(item[1])
+                        a_Dict["INCALENDAR"] =  cal   
+                              
+                finalTaskDict.update({i: a_Dict})
+                rawTagsList.append(a_Dict.get("CATEGORIES"))  
+                i = i + 1 
+
+                  
             # remove 'None' values
             for n in rawTagsList:
                 if n != None:
                     removedNoneTagsList.append(n)
             # add the tags to a list
-            i = 0
             for n in removedNoneTagsList:
                 tags = n.split(',')
                 for t in tags:
                     finalTagsDict[t] = intermediate_Tag_Dict
-                i = i + 1
+                j = j + 1
 
     return finalTaskDict, finalTagsDict 
 

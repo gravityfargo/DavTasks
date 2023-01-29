@@ -26,9 +26,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
+        
+        # self.pushButtonPush.clicked.connect(self.pullLocalData)
+        self.pushButtonPull.clicked.connect(self.pullUpstreamData)
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
-        self.pushButtonRefresh.clicked.connect(self.pullLocalData)
-        self.pushButtonSync.clicked.connect(self.pullUpstreamData)
 
     def populateTable(self):
         readLocalFile("todos")
@@ -192,9 +193,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if widget != None:
                 widget.deleteLater()
             self.uidMover = None
-            print("clearMainWindow - SingleTask")
 
-        # elif self.uidMover == None:
         readLocalFile("todos")
         todos = readLocalFile.data
         for t in todos.values():
@@ -202,14 +201,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             widget = self.todosFrame.findChild(QWidget, uid)
             if widget != None:
                 widget.deleteLater()
-        print("clearMainWindow")
 
         self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
         self.todosFrame.update()
 
     def pullUpstreamData(self):
-        compareData()
         self.clearMainWindow()
+        compareData()
         self.populateTags()
         self.populateTable()
 

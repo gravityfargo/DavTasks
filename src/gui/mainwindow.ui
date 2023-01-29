@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>956</width>
-    <height>714</height>
+    <height>794</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -61,16 +61,16 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonRefresh">
+       <widget class="QPushButton" name="pushButtonPush">
         <property name="text">
-         <string>Pull Local Data</string>
+         <string>Push to Server</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonSync">
+       <widget class="QPushButton" name="pushButtonPull">
         <property name="text">
-         <string>Sync (pull only)</string>
+         <string>Pull from Server</string>
         </property>
        </widget>
       </item>
@@ -99,8 +99,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>639</width>
-         <height>694</height>
+         <width>632</width>
+         <height>774</height>
         </rect>
        </property>
        <layout class="QGridLayout" name="gridLayoutScrollAreaTodosContent">
