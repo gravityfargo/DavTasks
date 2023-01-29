@@ -1,5 +1,5 @@
-from src.fileutils import *
-from src.davconnect import *
+from fileutils import *
+from davconnect import *
 
 # If a tag exists upstream, it wont be deleted from json. New tags are added.
 

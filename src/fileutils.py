@@ -4,7 +4,7 @@ import os
 from datetime import date, datetime
 import random
 
-dataFile = "localData.json"
+dataFile = "src/localData.json"
 settingsAr = {"URL": "", "USERNAME": "", "PASSWORD": "", "CALENDARS": ""}
 stockData = {"settings": settingsAr, "tags": {}, "todos": {}}
 

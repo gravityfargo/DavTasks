@@ -2,12 +2,12 @@ import sys
 from PyQt6 import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
-from src.davconnect import *
-from src.fileutils import *
-from src.syncutils import *
-from edittask import *
-from mainwindow import Ui_MainWindow
-from settingsdialog import Ui_DialogSettings
+from davconnect import *
+from fileutils import *
+from syncutils import *
+from gui.edittask import *
+from gui.mainwindow import Ui_MainWindow
+from gui.settingsdialog import Ui_DialogSettings
 
 
 
@@ -17,6 +17,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         # loadUi("mainwindow.ui", self)
         self.setWindowTitle("DAV Tasks")
+        
+        self.uidMover = None
 
         self.populateTags()
         self.populateTable()
@@ -26,6 +28,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
         self.pushButtonSync.clicked.connect(self.pullUpstreamData)
         self.pushButtonClear.clicked.connect(self.clearMainWindow)
+        
+        
 
     def populateTable(self):
         readLocalFile("todos")
@@ -159,27 +163,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.listWidgetTags.addItem(item)
         print("populateTags")
 
-    def clearSingleTaskFromTable(self, uid):
-        widget = self.todosFrame.findChild(QWidget, uid)
-        widget.deleteLater()
-        self.todosFrame.update()
-        print("clearSingleTaskFromTable")
-        self.verticalLayoutTodosFrame.itemAt
-
+        
     def clearMainWindow(self):
         self.listWidgetTags.clear()
-        readLocalFile("todos")
-        todos = readLocalFile.data
-
-        for t in todos.values():
-            uid = t["UID"]
-            widget = self.todosFrame.findChild(QWidget, uid)
+        if self.uidMover != None:
+            widget = self.todosFrame.findChild(QWidget, self.uidMover)
             if widget != None:
                 widget.setParent(None)
                 widget.deleteLater()
+            self.uidMover = None
+            print("clearMainWindow - SingleTask")
+        
+        else:
+            readLocalFile("todos")
+            todos = readLocalFile.data
+
+            for t in todos.values():
+                uid = t["UID"]
+                widget = self.todosFrame.findChild(QWidget, uid)
+                if widget != None:
+                    widget.setParent(None)
+                    widget.deleteLater()
+                    print("clearMainWindow")
         
         self.todosFrame.update()
-        print("clearMainWindow")
+        
 
     def pullUpstreamData(self):
         compareData()
@@ -210,15 +218,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             print("taskDialog opened to edit")
             uid = self.sender().objectName()[15:]
+            self.uidMover = uid
             dlg = TaskDialog(uid)
-
+    
         if dlg.exec():
-            print("taskDialog accept")
-            
+            self.clearMainWindow()
         else:
-            print("taskDialog reject")
-
-
+            print("")
+            
 class SettingsDialog(QDialog, Ui_DialogSettings):
     def __init__(self, *args, obj=None, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
@@ -279,17 +286,55 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
     def __init__(self, uid, *args, obj=None, **kwargs):
         super(TaskDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
-
+        
+        saveButton = QPushButton("Save")
+        deleteButton = QPushButton("Delete")
+        applyButton = QPushButton("Apply")
+        
         if uid == None:
-            self.pushButtonDelete.hide()
+            self.buttonBox.addButton(saveButton, self.buttonBox.ButtonRole.YesRole)
             self.populateTags()
         else:
+            self.buttonBox.addButton(deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
+            self.buttonBox.addButton(applyButton, self.buttonBox.ButtonRole.ApplyRole)
             self.populateForm(uid)
             self.populateTags()
             
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
-        self.pushButtonDelete.clicked.connect(lambda: self.deleteTodo(uid))
-        self.pushButtonSave.clicked.connect(lambda: self.submitTodo(uid))
+        saveButton.clicked.connect(self.submitTodo)
+        deleteButton.clicked.connect(lambda: self.deleteTodo(uid))
+        applyButton.clicked.connect(self.applyEdits)
+    
+    def applyEdits(self):
+        print("- applyEdits")
+        self.accept()
+        
+    def deleteTodo(self, uid):
+        print("- deleteTodo")
+        print(uid)
+        # deleteTodoByUID(uid)
+        self.accept()
+
+    def submitTodo(self, uid):
+                 
+        if not self.comboBoxTags.currentText():
+            tag = None
+        else:
+            tag = self.comboBoxTags.currentText()
+            
+        if self.dateEdit.isEnabled():
+            createTodo(tag, self.lineEditSummary.text(), self.dateEdit.date(), uid)
+        else:
+            createTodo(tag, self.lineEditSummary.text(), None, uid)
+                
+        print("- submitTodo")
+        self.accept()
+
+    def toggleDatePicker(self):
+        if self.dateEdit.isEnabled():
+            self.dateEdit.setEnabled(False)
+        else:
+            self.dateEdit.setEnabled(True)
 
     def populateForm(self, uid):
 
@@ -333,34 +378,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         for t in tags:
             self.comboBoxTags.addItem(t)
         print("- populateTags")
-
-    def toggleDatePicker(self):
-        if self.dateEdit.isEnabled():
-            self.dateEdit.setEnabled(False)
-        else:
-            self.dateEdit.setEnabled(True)
-
-    def deleteTodo(self, uid):
-        print("- deleteTodo")
-        MainWindow.clearSingleTaskFromTable(uid)
-        # deleteTodoByUID(uid)
-        super(TaskDialog, self).accept()
-
-    def submitTodo(self, uid):
-                    
-        if not self.comboBoxTags.currentText():
-            tag = None
-        else:
-            tag = self.comboBoxTags.currentText()
-            
-        if self.dateEdit.isEnabled():
-            createTodo(tag, self.lineEditSummary.text(), self.dateEdit.date(), uid)
-        else:
-            createTodo(tag, self.lineEditSummary.text(), None, uid)
-                
-        print("- submitTodo")
-        super(TaskDialog, self).accept()
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
