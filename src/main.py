@@ -39,7 +39,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             if "DUE;TZID=America/New_York" in t.keys():
                 rawDate = t["DUE;TZID=America/New_York"]
-                print(rawDate)
+            elif "DUE" in t.keys():
+                rawDate = t["DUE"]
             else:
                 rawDate = None
 
