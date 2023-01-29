@@ -72,7 +72,8 @@ def dateStampNow():
 
 
 def formatDateStamp(date):
-    date = datetime.strptime(date.toString(), "%a %b %w %Y")
+    # 'Sat Jan 28 2023'
+    date = datetime.strptime(date.toString(), "%a %b %d %Y")
     return date.strftime("%Y%m%dT%H%M%S")
 
 
@@ -82,7 +83,9 @@ def createTodo(tag, summary, due, uid):
 
     readLocalFile("todos")
     todos = readLocalFile.data
-    i = len(todos) + 1
+
+    lastKey = int(list(todos.keys())[-1]) + 1
+
     datestamp = dateStampNow()
 
     newTodoData = {
@@ -95,13 +98,12 @@ def createTodo(tag, summary, due, uid):
         newTodoData["DUE"] = formatDateStamp(due)
     if tag != None:
         newTodoData["CATEGORIES"] = tag
-
-    newTodo = {
-        i: newTodoData
-    }
-
     if uid != None:
         deleteTodoByUID(uid)
+
+    newTodo = {
+        lastKey: newTodoData
+    }
 
     changeLocalData(newTodo, key)
 
@@ -125,4 +127,3 @@ def deleteTodoByUID(uid):
         j = j + 1
     changeLocalData(None, "todos")
     changeLocalData(newDict, "todos")
-    print("- - deleteTodoByUID")
