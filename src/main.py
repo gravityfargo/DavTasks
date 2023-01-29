@@ -219,7 +219,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             print("")
 
-
 class SettingsDialog(QDialog, Ui_DialogSettings):
     def __init__(self, *args, obj=None, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
@@ -299,13 +298,9 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             self.populateForm(uid)
 
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
-        saveButton.clicked.connect(lambda: self.submitTodo(uid))
+        saveButton.clicked.connect(lambda: self.submitTodo(None))
         deleteButton.clicked.connect(lambda: self.deleteTodo(uid))
-        applyButton.clicked.connect(self.applyEdits)
-
-    def applyEdits(self):
-        print("- applyEdits")
-        self.accept()
+        applyButton.clicked.connect(lambda: self.submitTodo(uid))
 
     def deleteTodo(self, uid):
         deleteTodoByUID(uid)
