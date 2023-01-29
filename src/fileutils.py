@@ -99,10 +99,9 @@ def createTodo(tag, summary, due, uid):
     newTodo = {
         i: newTodoData
     }
-    
+
     if uid != None:
         deleteTodoByUID(uid)
-
 
     changeLocalData(newTodo, key)
 

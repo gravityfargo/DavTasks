@@ -10,14 +10,13 @@ from gui.mainwindow import Ui_MainWindow
 from gui.settingsdialog import Ui_DialogSettings
 
 
-
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
         # loadUi("mainwindow.ui", self)
         self.setWindowTitle("DAV Tasks")
-        
+
         self.uidMover = None
 
         self.populateTags()
@@ -28,8 +27,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
         self.pushButtonSync.clicked.connect(self.pullUpstreamData)
         self.pushButtonClear.clicked.connect(self.clearMainWindow)
-        
-        
 
     def populateTable(self):
         readLocalFile("todos")
@@ -145,7 +142,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.verticalLayoutTodosFrame.addWidget(self.frameTodo)
 
             i = i + 1
-        print("populateTable")
 
     def populateTags(self):
         readLocalFile("tags")
@@ -161,33 +157,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if len(tags[t]) != 0:
                     item.setBackground(QColor(tags[t]))
                 self.listWidgetTags.addItem(item)
-        print("populateTags")
 
-        
     def clearMainWindow(self):
         self.listWidgetTags.clear()
         if self.uidMover != None:
             widget = self.todosFrame.findChild(QWidget, self.uidMover)
             if widget != None:
-                widget.setParent(None)
                 widget.deleteLater()
             self.uidMover = None
             print("clearMainWindow - SingleTask")
-        
-        else:
+
+        elif self.uidMover == None:
             readLocalFile("todos")
             todos = readLocalFile.data
-
             for t in todos.values():
                 uid = t["UID"]
                 widget = self.todosFrame.findChild(QWidget, uid)
                 if widget != None:
-                    widget.setParent(None)
                     widget.deleteLater()
-                    print("clearMainWindow")
-        
+            self.populateTable()
+            self.populateTags()
+            print("clearMainWindow")
+
         self.todosFrame.update()
-        
 
     def pullUpstreamData(self):
         compareData()
@@ -211,7 +203,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             print("settingsDialog closed")
 
     def taskDialog(self):
-        
+
         if self.sender().objectName() == "pushButtonAdd":
             print("taskDialog opened to add")
             dlg = TaskDialog(None)
@@ -220,12 +212,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             uid = self.sender().objectName()[15:]
             self.uidMover = uid
             dlg = TaskDialog(uid)
-    
+
         if dlg.exec():
             self.clearMainWindow()
         else:
             print("")
-            
+
+
 class SettingsDialog(QDialog, Ui_DialogSettings):
     def __init__(self, *args, obj=None, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
@@ -286,47 +279,50 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
     def __init__(self, uid, *args, obj=None, **kwargs):
         super(TaskDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        
+
         saveButton = QPushButton("Save")
         deleteButton = QPushButton("Delete")
         applyButton = QPushButton("Apply")
-        
+
         if uid == None:
-            self.buttonBox.addButton(saveButton, self.buttonBox.ButtonRole.YesRole)
+            self.buttonBox.addButton(
+                saveButton, self.buttonBox.ButtonRole.YesRole)
             self.populateTags()
+            self.comboBoxTags.setCurrentText("")
         else:
-            self.buttonBox.addButton(deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
-            self.buttonBox.addButton(applyButton, self.buttonBox.ButtonRole.ApplyRole)
-            self.populateForm(uid)
+            self.buttonBox.addButton(
+                deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
+            self.buttonBox.addButton(
+                applyButton, self.buttonBox.ButtonRole.ApplyRole)
             self.populateTags()
-            
+            self.populateForm(uid)
+
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
-        saveButton.clicked.connect(self.submitTodo)
+        saveButton.clicked.connect(lambda: self.submitTodo(uid))
         deleteButton.clicked.connect(lambda: self.deleteTodo(uid))
         applyButton.clicked.connect(self.applyEdits)
-    
+
     def applyEdits(self):
         print("- applyEdits")
         self.accept()
-        
+
     def deleteTodo(self, uid):
-        print("- deleteTodo")
-        print(uid)
-        # deleteTodoByUID(uid)
+        deleteTodoByUID(uid)
         self.accept()
 
     def submitTodo(self, uid):
-                 
+
         if not self.comboBoxTags.currentText():
             tag = None
         else:
             tag = self.comboBoxTags.currentText()
-            
+
         if self.dateEdit.isEnabled():
-            createTodo(tag, self.lineEditSummary.text(), self.dateEdit.date(), uid)
+            createTodo(tag, self.lineEditSummary.text(),
+                       self.dateEdit.date(), uid)
         else:
             createTodo(tag, self.lineEditSummary.text(), None, uid)
-                
+
         print("- submitTodo")
         self.accept()
 
@@ -340,9 +336,9 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
         readLocalFile("todos")
         todos = readLocalFile.data
-        i = 0
+
+        currentDue = None
         keyUID = "UID"
-        keyCat = "CATEGORIES"
 
         for t in todos.values():
             if keyUID in t.keys():
@@ -351,11 +347,11 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                     if "DUE" in t.keys():
                         currentDueRaw = t["DUE"]
                         currentDue = formatDateNormal(currentDueRaw)
-                    else:
-                        currentDue = None
 
                     if "CATEGORIES" in t.keys():
                         self.comboBoxTags.setCurrentText(t["CATEGORIES"])
+                    else:
+                        self.comboBoxTags.setCurrentText("")
 
                     if currentDue == None:
                         self.dateEdit.setDate(date.today())
@@ -368,8 +364,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
                     self.lineEditSummary.setText(t["SUMMARY"])
 
-            else:
-                null = 0
         print("- populateForm")
 
     def populateTags(self):
@@ -378,6 +372,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         for t in tags:
             self.comboBoxTags.addItem(t)
         print("- populateTags")
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
