@@ -13,6 +13,11 @@ class Ui_EditTaskDialog(object):
     def setupUi(self, EditTaskDialog):
         EditTaskDialog.setObjectName("EditTaskDialog")
         EditTaskDialog.resize(389, 289)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(EditTaskDialog.sizePolicy().hasHeightForWidth())
+        EditTaskDialog.setSizePolicy(sizePolicy)
         self.gridLayout = QtWidgets.QGridLayout(EditTaskDialog)
         self.gridLayout.setObjectName("gridLayout")
         self.formLayout = QtWidgets.QFormLayout()

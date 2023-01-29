@@ -188,37 +188,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
-        print("pullUpstreamData")
 
     def pullLocalData(self):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
-        print("pullLocalData")
 
     def settingsDialog(self):
-        print("settingsDialog opened")
         dlg = SettingsDialog()
-        if dlg.exec():
-            n = 0
-        else:
-            print("settingsDialog closed")
+        dlg.exec()
 
     def taskDialog(self):
 
         if self.sender().objectName() == "pushButtonAdd":
-            print("taskDialog opened to add")
             dlg = TaskDialog(None)
         else:
-            print("taskDialog opened to edit")
             uid = self.sender().objectName()[15:]
             self.uidMover = uid
             dlg = TaskDialog(uid)
 
         if dlg.exec():
             self.pullLocalData()
-        else:
-            print("")
 
 class SettingsDialog(QDialog, Ui_DialogSettings):
     def __init__(self, *args, obj=None, **kwargs):
@@ -302,6 +292,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         saveButton.clicked.connect(lambda: self.submitTodo(None))
         deleteButton.clicked.connect(lambda: self.deleteTodo(uid))
         applyButton.clicked.connect(lambda: self.submitTodo(uid))
+        self.buttonBox.rejected.connect(self.reject)
 
     def deleteTodo(self, uid):
         deleteTodoByUID(uid)
@@ -320,7 +311,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         else:
             createTodo(tag, self.lineEditSummary.text(), None, uid)
 
-        print("- submitTodo")
         self.accept()
 
     def toggleDatePicker(self):
@@ -333,7 +323,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
         readLocalFile("todos")
         todos = readLocalFile.data
-
         currentDue = None
         keyUID = "UID"
 
@@ -361,15 +350,11 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
                     self.lineEditSummary.setText(t["SUMMARY"])
 
-        print("- populateForm")
-
     def populateTags(self):
         readLocalFile("tags")
         tags = readLocalFile.data
         for t in tags:
             self.comboBoxTags.addItem(t)
-        print("- populateTags")
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
