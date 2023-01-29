@@ -38,17 +38,27 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonSettings">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QPushButton" name="pushButtonSortTags">
         <property name="text">
-         <string>Settings</string>
+         <string>Sort Tags</string>
         </property>
        </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBoxSortTasks"/>
+      </item>
+      <item>
+       <spacer name="verticalSpacerButtons">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
       </item>
       <item>
        <widget class="QPushButton" name="pushButtonRefresh">
@@ -65,17 +75,17 @@
        </widget>
       </item>
       <item>
-       <spacer name="verticalSpacerButtons">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
+       <widget class="QPushButton" name="pushButtonSettings">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
+        <property name="text">
+         <string>Settings</string>
         </property>
-       </spacer>
+       </widget>
       </item>
      </layout>
     </item>

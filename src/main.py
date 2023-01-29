@@ -289,9 +289,10 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         self.setupUi(self)
         readLocalFile("settings")
         self.settings = readLocalFile.data
-
-        self.populateTags()
         self.populateForm()
+        
+        self.buttonBox.rejected.connect(self.reject)
+        self.buttonBox.accepted.connect(self.saveServerSettings)
 
     def populateForm(self):
         if self.settings["URL"] != "":
@@ -307,8 +308,41 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         newSettings = {
             "URL": "",
             "USERNAME": "",
-            "PASSWORD": ""
+            "PASSWORD": "",
+            "CALENDARS": ""
         }
+        if self.lineEditURL.text() and self.lineEditUser.text() and self.lineEditPass.text():
+            newSettings["URL"] = self.lineEditURL.text()
+            newSettings["USERNAME"] = self.lineEditUser.text()
+            newSettings["PASSWORD"] = self.lineEditPass.text()
+            if "CALENDARS" in self.settings.keys():
+                newSettings["CALENDARS"] = self.settings["CALENDARS"]
+            
+            changeLocalData(newSettings, "settings")
+            self.accept()
+        else:
+            self.warningDialog()
+        
+    
+    def warningDialog(self):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("DAV Tasks - Warning")
+        dlg.setText("All fields must be populated.")
+        button = dlg.exec()
+        if button == QMessageBox.StandardButton.Ok:
+            print("OK!")
+        
+        # if self.settings["USERNAME"] != "":
+        #     self.lineEditUser.setText(self.settings["USERNAME"])
+
+        # if self.settings["PASSWORD"] != "":
+        #     self.lineEditPass.setText(self.settings["PASSWORD"])
+
+        # inputTag = self.comboBoxTags.currentText()
+        
+        # 
+        
+        # self.accept()
 
 
 class TaskDialog(QDialog, Ui_EditTaskDialog):
