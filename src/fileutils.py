@@ -77,7 +77,7 @@ def formatDateStamp(date):
     return date.strftime("%Y%m%dT%H%M%S")
 
 
-def createTodo(tag, summary, due, uid):
+def createTodo(tag, summary, due, uid, cal):
     key = "todos"
     num = str(random.random())
 
@@ -92,6 +92,7 @@ def createTodo(tag, summary, due, uid):
         "DTSTAMP": datestamp,
         "SUMMARY": summary,
         "UID": num,
+        "INCALENDAR": cal
     }
 
     if due != None:

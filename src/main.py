@@ -362,6 +362,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                 applyButton, self.buttonBox.ButtonRole.ApplyRole)
             self.populateTags()
             self.populateForm(uid)
+            
 
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
         saveButton.clicked.connect(lambda: self.submitTodo(None))
@@ -379,12 +380,14 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             tag = None
         else:
             tag = self.comboBoxTags.currentText()
+            
+        cal = self.comboBoxCalendars.currentText()
 
         if self.dateEdit.isEnabled():
             createTodo(tag, self.lineEditSummary.text(),
-                       self.dateEdit.date(), uid)
+                       self.dateEdit.date(), uid, cal)
         else:
-            createTodo(tag, self.lineEditSummary.text(), None, uid)
+            createTodo(tag, self.lineEditSummary.text(), None, uid, cal)
 
         self.accept()
 
@@ -397,7 +400,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
     def populateForm(self, uid):
         currentDue = None
         keyUID = "UID"
-
+        
         for t in self.todos.values():
             if keyUID in t.keys():
                 if t[keyUID] == uid:
@@ -419,9 +422,10 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                         self.checkBoxEnableCalendar.setChecked(True)
                         self.dateEdit.setEnabled(True)
                         self.dateEdit.setDate(currentDue)
-
+                        
+                    self.comboBoxCalendars.setCurrentText(t["INCALENDAR"])
                     self.lineEditSummary.setText(t["SUMMARY"])
-
+                    
     def populateTags(self):
 
         for t in self.tags:
