@@ -13,7 +13,7 @@ class Ui_EditTagDialog(object):
     def setupUi(self, EditTagDialog):
         EditTagDialog.setObjectName("EditTagDialog")
         EditTagDialog.resize(400, 190)
-        EditTagDialog.setStyleSheet("background-color: rgb(51, 51, 51);")
+        EditTagDialog.setStyleSheet("background-color: rgb(18, 18, 18);")
         self.gridLayout = QtWidgets.QGridLayout(EditTagDialog)
         self.gridLayout.setObjectName("gridLayout")
         self.buttonBox = QtWidgets.QDialogButtonBox(EditTagDialog)

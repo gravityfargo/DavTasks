@@ -219,7 +219,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populateTable()
 
     def editTagsDialog(self):
-        dlg = EditTasksDialog()
+        dlg = EditTagsDialog()
         if dlg.exec():
             self.pullLocalData()
 
@@ -240,9 +240,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.pullLocalData()
 
 
-class EditTasksDialog(QDialog, Ui_EditTagDialog):
+class EditTagsDialog(QDialog, Ui_EditTagDialog):
     def __init__(self, *args, obj=None, **kwargs):
-        super(EditTasksDialog, self).__init__(*args, **kwargs)
+        super(EditTagsDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
         readLocalFile("tags")
 
@@ -271,7 +271,7 @@ class EditTasksDialog(QDialog, Ui_EditTagDialog):
                     "background-color: " + self.tags[tag] + ";")
             else:
                 self.widgetColorPreview.setStyleSheet(
-                    "background-color: rgb(51, 51, 51);")
+                    "background-color: rgb(18, 18, 18);")
 
     def saveTagColor(self):
         inputTag = self.comboBoxTags.currentText()
@@ -328,22 +328,7 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("DAV Tasks - Warning")
         dlg.setText("All fields must be populated.")
-        button = dlg.exec()
-        if button == QMessageBox.StandardButton.Ok:
-            print("OK!")
-        
-        # if self.settings["USERNAME"] != "":
-        #     self.lineEditUser.setText(self.settings["USERNAME"])
-
-        # if self.settings["PASSWORD"] != "":
-        #     self.lineEditPass.setText(self.settings["PASSWORD"])
-
-        # inputTag = self.comboBoxTags.currentText()
-        
-        # 
-        
-        # self.accept()
-
+        dlg.exec()
 
 class TaskDialog(QDialog, Ui_EditTaskDialog):
     def __init__(self, uid, *args, obj=None, **kwargs):
@@ -355,6 +340,11 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
         readLocalFile("tags")
         self.tags = readLocalFile.data
+        
+        readLocalFile("settings")
+        self.settings = readLocalFile.data
+        
+        self.populateCalendars()
 
         saveButton = QPushButton("Save")
         deleteButton = QPushButton("Delete")
@@ -439,6 +429,9 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         for t in self.tags:
             self.comboBoxTags.addItem(t)
 
+    def populateCalendars(self):
+        for c in self.settings["CALENDARS"]:
+            self.comboBoxCalendars.addItem(c)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
