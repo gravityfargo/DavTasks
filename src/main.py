@@ -142,6 +142,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.verticalLayoutTodosFrame.addWidget(self.frameTodo)
 
             i = i + 1
+        spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Expanding)
+        self.verticalLayoutTodosFrame.addItem(spacerItem1)
 
     def populateTags(self):
         readLocalFile("tags")
@@ -175,8 +177,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 widget = self.todosFrame.findChild(QWidget, uid)
                 if widget != None:
                     widget.deleteLater()
-            self.populateTable()
-            self.populateTags()
             print("clearMainWindow")
 
         self.todosFrame.update()
@@ -214,7 +214,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dlg = TaskDialog(uid)
 
         if dlg.exec():
-            self.clearMainWindow()
+            self.pullLocalData()
         else:
             print("")
 

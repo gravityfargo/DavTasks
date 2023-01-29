@@ -48,7 +48,7 @@ class Ui_MainWindow(object):
         self.scrollAreaTodos.setWidgetResizable(True)
         self.scrollAreaTodos.setObjectName("scrollAreaTodos")
         self.scrollAreaTodosContents = QtWidgets.QWidget()
-        self.scrollAreaTodosContents.setGeometry(QtCore.QRect(0, 0, 660, 694))
+        self.scrollAreaTodosContents.setGeometry(QtCore.QRect(0, 0, 639, 694))
         self.scrollAreaTodosContents.setObjectName("scrollAreaTodosContents")
         self.gridLayoutScrollAreaTodosContent = QtWidgets.QGridLayout(self.scrollAreaTodosContents)
         self.gridLayoutScrollAreaTodosContent.setContentsMargins(0, 0, 0, 0)
