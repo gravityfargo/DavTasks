@@ -44,9 +44,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             uid = t["UID"]
             summary = t["SUMMARY"]
 
-            if "DUE;TZID=America/New_York" in t.keys():
-                rawDate = t["DUE;TZID=America/New_York"]
-            elif "DUE" in t.keys():
+            if "DUE" in t.keys():
                 rawDate = t["DUE"]
             else:
                 rawDate = None
