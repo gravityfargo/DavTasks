@@ -78,7 +78,7 @@ def pushUpstream(task, io):
                 summary=task["SUMMARY"]
             )
             
-    if io == "Edit":
+    if io == "Edit" or io == "Delete":
         todos_found = my_tasklist.search(
             todo=True,
             uid=task["UID"],

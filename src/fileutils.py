@@ -103,17 +103,23 @@ def createTodo(tag, summary, due, uid, cal):
 
 def deleteTodoByUID(uid):
     newDict = {}
+    delDict = {}
     readLocalFile("todos")
     todos = readLocalFile.data
     localTodos = todos.copy()
     i = 0
     for x, y in todos.items():
         if uid in y.values():
+            delDict["INCALENDAR"] = y["INCALENDAR"]
+            delDict["UID"] = uid
             i = x
     j = 0
     del localTodos[i]
+    
     for t, v in localTodos.items():
         newDict[j] = v
         j = j + 1
+        
     changeLocalData(None, "todos")
+    davconnect.pushUpstream(delDict, "Delete")
     changeLocalData(newDict, "todos")
