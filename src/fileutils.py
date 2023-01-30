@@ -3,6 +3,7 @@ import json
 import os
 from datetime import date, datetime
 import random
+import davconnect
 
 dataFile = "src/localData.json"
 settingsAr = {"URL": "", "USERNAME": "", "PASSWORD": "", "CALENDARS": ""}
@@ -78,11 +79,22 @@ def createTodo(tag, summary, due, uid, cal):
     if tag != None:
         newTodoData["CATEGORIES"] = tag
     if uid != None:
-        deleteTodoByUID(uid)
-
+        newTodoData["UID"] = uid
+    if uid == None:
+        newTodoData["UID"] = num
+        
+        
     newTodo = {
         lastKey: newTodoData
     }
+        
+    if uid != None:
+        deleteTodoByUID(uid)
+        davconnect.pushUpstream(newTodoData, "Edit")
+        davconnect.pushUpstream(newTodoData, "Create")
+    if uid == None:
+        davconnect.pushUpstream(newTodoData, "Create")
+
     changeLocalData(newTodo, key)
 
 # seach for a todo in the local json by uid, then delete the number assigned to it

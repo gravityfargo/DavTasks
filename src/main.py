@@ -381,7 +381,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         self.accept()
 
     def submitTodo(self, uid):
-        
+               
         newTask = {
             "SUMMARY": self.lineEditSummary.text(),
             "INCALENDAR": self.comboBoxCalendars.currentText(),
@@ -402,7 +402,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         else:
             createTodo(tag, self.lineEditSummary.text(), None, uid, self.comboBoxCalendars.currentText())
 
-        pushUpstream(newTask, "Create")
         self.accept()
 
     def toggleDatePicker(self):

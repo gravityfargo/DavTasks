@@ -38,56 +38,53 @@ def getCalendars():
     changeLocalData(finalCalendarsDict, "settings")
 
 
-def pushUpstream(newTask, io):
+def pushUpstream(task, io):
     serverConnect()
     readLocalFile("tags")
     tags = readLocalFile.data
     
-    tasksCalendar = newTask["INCALENDAR"]
+    tasksCalendar = task["INCALENDAR"]
     my_tasklist = serverConnect.my_principal.calendar(tasksCalendar)
     tasks = my_tasklist.todos()
-    if "DUE" in newTask.keys():
-        nDS = datetime.strptime(newTask["DUE"], 'date(%Y, %m, %d)')
+    if "DUE" in task.keys():
+        nDS = datetime.strptime(task["DUE"], 'date(%Y, %m, %d)')
         formattedDate = nDS.date()
-        print(nDS)
+        
     if io == "Create":
-        if "CATEGORIES" in newTask.keys() and "DUE" in newTask.keys():
+        if "CATEGORIES" in task.keys() and "DUE" in task.keys():
             my_tasklist.add_todo(
-                summary=newTask["SUMMARY"],
+                summary=task["SUMMARY"],
                 due=formattedDate,
-                categories=[newTask["CATEGORIES"]]
+                categories=[task["CATEGORIES"]]
             )
-            tags[newTask["CATEGORIES"]] = {}
+            tags[task["CATEGORIES"]] = {}
             changeLocalData(tags, "tags")
-        elif "CATEGORIES" in newTask.keys() and "DUE" not in newTask.keys():
+        elif "CATEGORIES" in task.keys() and "DUE" not in task.keys():
             my_tasklist.add_todo(
-                summary=newTask["SUMMARY"],
-                categories=[newTask["CATEGORIES"]]
+                summary=task["SUMMARY"],
+                categories=[task["CATEGORIES"]]
             )
-            tags[newTask["CATEGORIES"]] = {}
+            tags[task["CATEGORIES"]] = {}
             changeLocalData(tags, "tags")
-        elif "CATEGORIES" not in newTask.keys() and "DUE" in newTask.keys():
+        elif "CATEGORIES" not in task.keys() and "DUE" in task.keys():
             my_tasklist.add_todo(
-                summary=newTask["SUMMARY"],
+                summary=task["SUMMARY"],
                 due=formattedDate
             )
         else:
             my_tasklist.add_todo(
-                summary=newTask["SUMMARY"]
+                summary=task["SUMMARY"]
             )
-    
-    # todos_found = my_tasklist.search(
-    #     todo=True,
-    #     uid=existingTask["UID"],
-    # )
-    # if not todos_found:
-    #     print(
-    #         "Apparently your calendar server does not support searching for future instances of reoccurring tasks"
-    #     )
-    # else:
-    #     print("Here is even more icalendar data:")
-    #     print(todos_found[0].data)
-    #     todos_found[0].complete()
+            
+    if io == "Edit":
+        todos_found = my_tasklist.search(
+            todo=True,
+            uid=task["UID"],
+        )
+        if not todos_found:
+            print("Didn't find it.")
+        else:
+            todos_found[0].delete()
         
   
     
@@ -116,6 +113,7 @@ def pullUpstreamData():
             # I need to add another split function specifically for the semicolons for recursion
             # Formats the raw caldav data into a usable dict
             
+            # TODO replace all this crap with the .icalendar_component[""] system
             for a in todos:
                 a_Dict = {}
                 a_split = a.data.split('\n')
