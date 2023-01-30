@@ -83,10 +83,11 @@ def pushUpstream(task, io):
             todo=True,
             uid=task["UID"],
         )
+        
         if not todos_found:
             print("Didn't find it.")
         else:
-            todos_found[0].delete()
+            todos_found[0].complete()
         
   
     

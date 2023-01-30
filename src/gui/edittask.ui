@@ -71,6 +71,13 @@
        <property name="calendarPopup">
         <bool>true</bool>
        </property>
+       <property name="date">
+        <date>
+         <year>2000</year>
+         <month>1</month>
+         <day>1</day>
+        </date>
+       </property>
       </widget>
      </item>
      <item row="0" column="1">

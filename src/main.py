@@ -19,16 +19,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # loadUi("mainwindow.ui", self)
         self.setWindowTitle("DAV Tasks")
 
-        self.uidMover = None
+        self.uidMoverDist = {}
 
         self.populateTags()
         self.populateTable()
 
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
-        
+
         self.pushButtonPush.clicked.connect(self.pushUpstream)
-        self.pushButtonPull.clicked.connect(self.pullUpstreamData)
+        self.pushButtonPull.clicked.connect(self.pullUpstream)
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
 
     def populateTable(self):
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.frameDuedays = QtWidgets.QFrame()
             self.gridLayoutTodo.addWidget(self.frameDuedays, 0, 2, 1, 1)
-            
+
             self.gridLayoutCountdown = QtWidgets.QGridLayout(self.frameDuedays)
             self.gridLayoutCountdown.setContentsMargins(0, 0, 0, 0)
 
@@ -102,12 +102,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             font = QtGui.QFont()
             font.setBold(True)
             self.labelCountdown.setFont(font)
-            self.labelCountdown.setStyleSheet("color: rgb(0, 0, 0); font: 12pt;")
+            self.labelCountdown.setStyleSheet(
+                "color: rgb(0, 0, 0); font: 12pt;")
             self.gridLayoutCountdown.addWidget(self.labelCountdown, 0, 0, 1, 1)
             self.labelCountdown.setAlignment(
                 QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
-            
-            
 
             self.frameDate = QtWidgets.QFrame()
             self.gridLayoutTodo.addWidget(self.frameDate, 0, 3, 1, 1)
@@ -184,17 +183,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.listWidgetTags.addItem(item)
         self.listWidgetTags.sortItems(Qt.SortOrder.AscendingOrder)
 
+    def clearOneTaskMainWindow(self):
+        if len(self.uidMoverDist) > 0:
+            for t in self.uidMoverDist:
+                widget = self.todosFrame.findChild(QWidget, self.uidMoverDist[t])
+                if widget != None:
+                    widget.deleteLater()
+                    
+        self.todosFrame.update()
+            
     def clearMainWindow(self):
         self.listWidgetTags.clear()
-        if self.uidMover != None:
-            widget = self.todosFrame.findChild(QWidget, self.uidMover)
-            if widget != None:
-                widget.deleteLater()
-            self.uidMover = None
-
         readLocalFile("todos")
         todos = readLocalFile.data
         for t in todos.values():
+            
             uid = t["UID"]
             widget = self.todosFrame.findChild(QWidget, uid)
             if widget != None:
@@ -203,18 +206,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
         self.todosFrame.update()
 
-    def pullUpstreamData(self):
+    def pullUpstream(self):
         self.clearMainWindow()
         compareData(False)
         self.populateTags()
         self.populateTable()
-        
+
     def pushUpstream(self):
         compareData(True)
         self.populateTags()
         self.populateTable()
 
     def pullLocalData(self):
+        self.clearOneTaskMainWindow()
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
@@ -234,7 +238,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dlg = TaskDialog(None)
         else:
             uid = self.sender().objectName()[15:]
-            self.uidMover = uid
+            self.uidMoverDist[69] = uid
             dlg = TaskDialog(uid)
 
         if dlg.exec():
@@ -291,7 +295,7 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         readLocalFile("settings")
         self.settings = readLocalFile.data
         self.populateForm()
-        
+
         self.buttonBox.rejected.connect(self.reject)
         self.buttonBox.accepted.connect(self.saveServerSettings)
 
@@ -318,18 +322,18 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
             newSettings["PASSWORD"] = self.lineEditPass.text()
             if "CALENDARS" in self.settings.keys():
                 newSettings["CALENDARS"] = self.settings["CALENDARS"]
-            
+
             changeLocalData(newSettings, "settings")
             self.accept()
         else:
             self.warningDialog()
-        
-    
+
     def warningDialog(self):
         dlg = QMessageBox(self)
         dlg.setWindowTitle("DAV Tasks - Warning")
         dlg.setText("All fields must be populated.")
         dlg.exec()
+
 
 class TaskDialog(QDialog, Ui_EditTaskDialog):
     def __init__(self, uid, *args, obj=None, **kwargs):
@@ -341,15 +345,17 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
         readLocalFile("tags")
         self.tags = readLocalFile.data
-        
+
         readLocalFile("settings")
         self.settings = readLocalFile.data
-        
+
         self.populateCalendars()
 
         saveButton = QPushButton("Save")
         deleteButton = QPushButton("Delete")
         applyButton = QPushButton("Apply")
+        
+        self.dateEdit.setDate(date.today())
 
         if uid == None:
             self.setWindowTitle("DAV Tasks - New Task")
@@ -357,7 +363,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                 saveButton, self.buttonBox.ButtonRole.YesRole)
             self.populateTags()
             self.comboBoxTags.setCurrentText("")
-            self.dateEdit.setDate(date.today())
         else:
             self.setWindowTitle("DAV Tasks - Edit Task")
             self.buttonBox.addButton(
@@ -366,8 +371,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                 applyButton, self.buttonBox.ButtonRole.ApplyRole)
             self.populateTags()
             self.populateForm(uid)
-            
-        
+
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
         saveButton.clicked.connect(lambda: self.submitTodo(None))
         deleteButton.clicked.connect(lambda: self.deleteTodo(uid))
@@ -379,7 +383,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         self.accept()
 
     def submitTodo(self, uid):
-               
+
         newTask = {
             "SUMMARY": self.lineEditSummary.text(),
             "INCALENDAR": self.comboBoxCalendars.currentText(),
@@ -390,7 +394,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         else:
             tag = self.comboBoxTags.currentText()
             newTask['CATEGORIES'] = self.comboBoxTags.currentText()
-
+            
         if self.dateEdit.isEnabled():
             nDS = self.dateEdit.date().toPyDate()
             formattedDate = nDS.strftime("date(%Y, %m, %d)")
@@ -398,7 +402,8 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                        formattedDate, uid, self.comboBoxCalendars.currentText())
             newTask["DUE"] = formattedDate
         else:
-            createTodo(tag, self.lineEditSummary.text(), None, uid, self.comboBoxCalendars.currentText())
+            createTodo(tag, self.lineEditSummary.text(), None,
+                       uid, self.comboBoxCalendars.currentText())
 
         self.accept()
 
@@ -411,15 +416,15 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
     def populateForm(self, uid):
         currentDue = None
         keyUID = "UID"
-        
+
         for t in self.todos.values():
             if keyUID in t.keys():
                 if t[keyUID] == uid:
 
                     if "DUE" in t.keys():
                         currentDueRaw = t["DUE"]
-                        print(currentDueRaw)
-                        currentDue = datetime.strptime(currentDueRaw, 'date(%Y, %m, %d)')
+                        currentDue = datetime.strptime(
+                            currentDueRaw, 'date(%Y, %m, %d)')
 
                     if "CATEGORIES" in t.keys():
                         self.comboBoxTags.setCurrentText(t["CATEGORIES"])
@@ -433,10 +438,10 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                         self.checkBoxEnableCalendar.setChecked(True)
                         self.dateEdit.setEnabled(True)
                         self.dateEdit.setDate(currentDue)
-                        
+
                     self.comboBoxCalendars.setCurrentText(t["INCALENDAR"])
                     self.lineEditSummary.setText(t["SUMMARY"])
-                    
+
     def populateTags(self):
 
         for t in self.tags:
@@ -445,6 +450,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
     def populateCalendars(self):
         for c in self.settings["CALENDARS"]:
             self.comboBoxCalendars.addItem(c)
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

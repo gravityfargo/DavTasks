@@ -60,17 +60,23 @@ def readLocalFile(key):
 
 
 def createTodo(tag, summary, due, uid, cal):
+    readLocalFile("tags")
+    tags = readLocalFile.data
+    newTag = tags.copy()
+    
+    if tag not in tags.values():
+        newTag[tag] = {}
+        changeLocalData(newTag, "tags")
+    
     key = "todos"
-    num = str(random.random())
+    num = random.randint(200, 15000)
+    num2 = random.randint(200, 15000)
 
     readLocalFile("todos")
     todos = readLocalFile.data
-
-    lastKey = int(list(todos.keys())[-1]) + 1
-
+            
     newTodoData = {
         "SUMMARY": summary,
-        "UID": num,
         "INCALENDAR": cal
     }
 
@@ -80,21 +86,12 @@ def createTodo(tag, summary, due, uid, cal):
         newTodoData["CATEGORIES"] = tag
     if uid != None:
         newTodoData["UID"] = uid
-    if uid == None:
-        newTodoData["UID"] = num
-        
-        
-    newTodo = {
-        lastKey: newTodoData
-    }
-        
-    if uid != None:
         deleteTodoByUID(uid)
-        davconnect.pushUpstream(newTodoData, "Edit")
-        davconnect.pushUpstream(newTodoData, "Create")
     if uid == None:
-        davconnect.pushUpstream(newTodoData, "Create")
-
+        newTodoData["UID"] = str(num)
+    newTodo = {
+        num2: newTodoData
+    }
     changeLocalData(newTodo, key)
 
 # seach for a todo in the local json by uid, then delete the number assigned to it
@@ -121,5 +118,4 @@ def deleteTodoByUID(uid):
         j = j + 1
         
     changeLocalData(None, "todos")
-    davconnect.pushUpstream(delDict, "Delete")
     changeLocalData(newDict, "todos")
