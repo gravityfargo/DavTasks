@@ -27,6 +27,9 @@ def serverConnect():
 def getCalendars():
     calendarDict = {}
     finalCalendarsDict = {}
+    finalCalendarsDict["CALENDARS"] = ""
+    changeLocalData(finalCalendarsDict, "settings")
+    
     calendars = serverConnect.my_principal.calendars()
     if calendars:
         for c in calendars:
@@ -34,7 +37,6 @@ def getCalendars():
     else:
         print("your principal has no calendars")
     finalCalendarsDict["CALENDARS"] = calendarDict
-    changeLocalData(None, "settings")
     changeLocalData(finalCalendarsDict, "settings")
 
 
@@ -131,8 +133,8 @@ def pullUpstreamData():
                                 a_Dict["DUE"] = finalDate
                         if "DUE;TZID=America/New_York" in a_Dict.keys():
                             # 20230129T200000
-                            if len(a_Dict["DUE"]) == 15:
-                                nDS = datetime.strptime(a_Dict["DUE"], '%Y%m%dT%H%M%S')
+                            if len(a_Dict["DUE;TZID=America/New_York"]) == 15:
+                                nDS = datetime.strptime(a_Dict["DUE;TZID=America/New_York"], '%Y%m%dT%H%M%S')
                                 finalDate = nDS.date().strftime("date(%Y, %m, %d)")
                                 a_Dict["DUE"] = finalDate
                         if "DUE;VALUE=DATE" in a_Dict.keys():
