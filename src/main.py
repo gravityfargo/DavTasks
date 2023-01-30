@@ -27,7 +27,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
         
-        # self.pushButtonPush.clicked.connect(self.pullLocalData)
+        self.pushButtonPush.clicked.connect(self.pushUpstream)
         self.pushButtonPull.clicked.connect(self.pullUpstreamData)
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
 
@@ -135,9 +135,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.labelCountdown.setStyleSheet("color: rgb(51, 51, 51);")
 
             else:
-                formattedDate = formatDateNormal(rawDate)
                 today = date.today()
-                delta = formattedDate - today
+                formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
+                delta = formattedDate.date() - today
                 self.labelCountdown.setText(str(delta.days))
                 if delta.days < 1 and delta.days >= 0:
                     self.frameDuedays.setStyleSheet(
@@ -207,7 +207,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def pullUpstreamData(self):
         self.clearMainWindow()
-        compareData()
+        compareData(False)
+        self.populateTags()
+        self.populateTable()
+        
+    def pushUpstream(self):
+        compareData(True)
         self.populateTags()
         self.populateTable()
 
@@ -354,6 +359,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                 saveButton, self.buttonBox.ButtonRole.YesRole)
             self.populateTags()
             self.comboBoxTags.setCurrentText("")
+            self.dateEdit.setDate(date.today())
         else:
             self.setWindowTitle("DAV Tasks - Edit Task")
             self.buttonBox.addButton(
@@ -363,7 +369,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             self.populateTags()
             self.populateForm(uid)
             
-
+        
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
         saveButton.clicked.connect(lambda: self.submitTodo(None))
         deleteButton.clicked.connect(lambda: self.deleteTodo(uid))
@@ -375,20 +381,28 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         self.accept()
 
     def submitTodo(self, uid):
+        
+        newTask = {
+            "SUMMARY": self.lineEditSummary.text(),
+            "INCALENDAR": self.comboBoxCalendars.currentText(),
+        }
 
         if not self.comboBoxTags.currentText():
             tag = None
         else:
             tag = self.comboBoxTags.currentText()
-            
-        cal = self.comboBoxCalendars.currentText()
+            newTask['CATEGORIES'] = self.comboBoxTags.currentText()
 
         if self.dateEdit.isEnabled():
+            nDS = self.dateEdit.date().toPyDate()
+            formattedDate = nDS.strftime("date(%Y, %m, %d)")
             createTodo(tag, self.lineEditSummary.text(),
-                       self.dateEdit.date(), uid, cal)
+                       formattedDate, uid, self.comboBoxCalendars.currentText())
+            newTask["DUE"] = formattedDate
         else:
-            createTodo(tag, self.lineEditSummary.text(), None, uid, cal)
+            createTodo(tag, self.lineEditSummary.text(), None, uid, self.comboBoxCalendars.currentText())
 
+        pushUpstream(newTask, "Create")
         self.accept()
 
     def toggleDatePicker(self):
@@ -407,7 +421,8 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
                     if "DUE" in t.keys():
                         currentDueRaw = t["DUE"]
-                        currentDue = formatDateNormal(currentDueRaw)
+                        print(currentDueRaw)
+                        currentDue = datetime.strptime(currentDueRaw, 'date(%Y, %m, %d)')
 
                     if "CATEGORIES" in t.keys():
                         self.comboBoxTags.setCurrentText(t["CATEGORIES"])
@@ -415,7 +430,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                         self.comboBoxTags.setCurrentText("")
 
                     if currentDue == None:
-                        self.dateEdit.setDate(date.today())
                         self.dateEdit.setEnabled(False)
                         self.checkBoxEnableCalendar.setChecked(False)
                     else:

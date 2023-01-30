@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>389</width>
-    <height>289</height>
+    <height>296</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -64,6 +64,9 @@
       <widget class="QDateEdit" name="dateEdit">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="displayFormat">
+        <string>MM/dd/yyyy</string>
        </property>
        <property name="calendarPopup">
         <bool>true</bool>

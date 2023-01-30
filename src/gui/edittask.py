@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_EditTaskDialog(object):
     def setupUi(self, EditTaskDialog):
         EditTaskDialog.setObjectName("EditTaskDialog")
-        EditTaskDialog.resize(389, 289)
+        EditTaskDialog.resize(389, 296)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -68,4 +68,5 @@ class Ui_EditTaskDialog(object):
         self.labelTag.setText(_translate("EditTaskDialog", "Tag"))
         self.checkBoxEnableCalendar.setText(_translate("EditTaskDialog", "Enable Due Date"))
         self.labelDue.setText(_translate("EditTaskDialog", "Due Date"))
+        self.dateEdit.setDisplayFormat(_translate("EditTaskDialog", "MM/dd/yyyy"))
         self.labelCalendars.setText(_translate("EditTaskDialog", "Select a Calendar"))

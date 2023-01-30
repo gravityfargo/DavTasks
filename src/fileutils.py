@@ -57,25 +57,6 @@ def readLocalFile(key):
         with open(dataFile, "w") as outfile:
             json.dump(stockData, outfile, indent=4)
 
-# take the raw date format from the DAV data and formats it into a date object
-
-
-def formatDateNormal(rawDate):
-    year = rawDate[:4]
-    month = rawDate[4:6]
-    day = rawDate[6:8]
-    return date(int(year), int(month), int(day))
-
-
-def dateStampNow():
-    return datetime.now().strftime("%Y%m%dT%H%M%S")
-
-
-def formatDateStamp(date):
-    # 'Sat Jan 28 2023'
-    date = datetime.strptime(date.toString(), "%a %b %d %Y")
-    return date.strftime("%Y%m%dT%H%M%S")
-
 
 def createTodo(tag, summary, due, uid, cal):
     key = "todos"
@@ -86,17 +67,14 @@ def createTodo(tag, summary, due, uid, cal):
 
     lastKey = int(list(todos.keys())[-1]) + 1
 
-    datestamp = dateStampNow()
-
     newTodoData = {
-        "DTSTAMP": datestamp,
         "SUMMARY": summary,
         "UID": num,
         "INCALENDAR": cal
     }
 
     if due != None:
-        newTodoData["DUE"] = formatDateStamp(due)
+        newTodoData["DUE"] = str(due)
     if tag != None:
         newTodoData["CATEGORIES"] = tag
     if uid != None:
@@ -105,7 +83,6 @@ def createTodo(tag, summary, due, uid, cal):
     newTodo = {
         lastKey: newTodoData
     }
-
     changeLocalData(newTodo, key)
 
 # seach for a todo in the local json by uid, then delete the number assigned to it
