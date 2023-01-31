@@ -162,35 +162,54 @@ def sortTodos(byWhat, direction):
 
         if direction == "Ascending":
             newTaskDict = {}
-            i = 0
             deltaList.sort()
-
+            i = 0
             for x in deltaList:
-                for t in todos.values():
-                    if "DUE" in t.keys():
-                        rawDate = t["DUE"]
+                for key, value in todos.copy().items():
+                    if "DUE" in value.keys():
+                        rawDate = value["DUE"]
                     else:
                         rawDate = None
 
                     if rawDate != None:
-                        today = date.today()
-                        formattedDate = datetime.strptime(
-                            rawDate, 'date(%Y, %m, %d)')
-                        delta = formattedDate.date() - today
+                        if "DUE" in value.keys():
+                            today = date.today()
+                            formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
+                            delta = formattedDate.date() - today
 
-                        if deltaList[0] == delta.days:
-                            newTaskDict[i] = t
-                            del deltaList[0]
-                            i = i + 1
+                            if x == delta.days:
+                                newTaskDict[i] = value
+                                del todos[key]
+                                i = i + 1
 
+        if direction == "Descending":
+            newTaskDict = {}
+            deltaList.sort(reverse=True)
+            i = 0
+            for x in deltaList:
+                for key, value in todos.copy().items():
+                    if "DUE" in value.keys():
+                        rawDate = value["DUE"]
+                    else:
+                        rawDate = None
+
+                    if rawDate != None:
+                        if "DUE" in value.keys():
+                            today = date.today()
+                            formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
+                            delta = formattedDate.date() - today
+
+                            if x == delta.days:
+                                newTaskDict[i] = value
+                                del todos[key]
+                                i = i + 1
+                
         for t in todos.values():
             if "DUE" not in t.keys():
                 newTaskDict[i] = t
                 i = i + 1
         changeLocalData(None, "todos")
         changeLocalData(newTaskDict, "todos")
-
-
 
     if byWhat == "Tag":
         changeLocalData(None, "todos")
@@ -202,7 +221,6 @@ def sortTodos(byWhat, direction):
                 tag = t["CATEGORIES"]
                 tagsList.append(tag)
 
-        
         if direction == "Ascending":
             tagsList.sort()
             i = 0
@@ -231,8 +249,5 @@ def sortTodos(byWhat, direction):
             if "CATEGORIES" not in t.keys():
                 newTaskDict[i] = t
                 i = i + 1
-            
-        
-        changeLocalData(newTaskDict, "todos")
-        
 
+        changeLocalData(newTaskDict, "todos")

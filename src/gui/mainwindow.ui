@@ -53,16 +53,6 @@
         </item>
         <item>
          <property name="text">
-          <string>Countdown</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Name</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
           <string>Tag</string>
          </property>
         </item>
@@ -134,7 +124,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>655</width>
+         <width>650</width>
          <height>774</height>
         </rect>
        </property>
