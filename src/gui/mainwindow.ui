@@ -45,7 +45,42 @@
        </widget>
       </item>
       <item>
-       <widget class="QComboBox" name="comboBoxSortTasks"/>
+       <widget class="QComboBox" name="comboBoxSortTasks">
+        <item>
+         <property name="text">
+          <string>Due Date</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Countdown</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Name</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Tag</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBoxSortDirection">
+        <item>
+         <property name="text">
+          <string>Ascending</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Descending</string>
+         </property>
+        </item>
+       </widget>
       </item>
       <item>
        <spacer name="verticalSpacerButtons">
@@ -99,7 +134,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>632</width>
+         <width>655</width>
          <height>774</height>
         </rect>
        </property>

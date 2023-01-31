@@ -142,3 +142,63 @@ def deleteTodoByUID(uid):
             
     changeLocalData(None, "todos")
     changeLocalData(newDict, "todos")
+
+def sortTodos(byWhat, direction):
+    readLocalFile("todos")
+    todos = readLocalFile.data
+
+    deltaList = []
+
+    if byWhat == "Due Date":
+        
+        for t in todos.values():
+            if "DUE" in t.keys():
+                rawDate = t["DUE"]
+            else:
+                rawDate = None
+
+            if rawDate != None:
+                today = date.today()
+                formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
+                delta = formattedDate.date() - today
+                deltaList.append(delta.days)
+
+        
+
+        if direction == "Ascending":
+            newTaskDict = {}
+            i = 0
+            j = 0
+            deltaList.sort()
+
+            for x in deltaList:
+                for t in todos.values():
+                    if "DUE" in t.keys():
+                        rawDate = t["DUE"]
+                    else:
+                        rawDate = None
+
+                    if rawDate != None:
+                        today = date.today()
+                        formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
+                        delta = formattedDate.date() - today
+
+                        if deltaList[0] == delta.days:
+                            newTaskDict[i] = t
+                            del deltaList[0]
+                            i = i + 1
+                            j = j + 1
+
+
+        for t in todos.values():
+            if "DUE" not in t.keys():
+                    newTaskDict[i] = t
+                    i = i + 1
+
+        
+        changeLocalData(None, "todos")
+        changeLocalData(newTaskDict, "todos")
+        
+                
+
+

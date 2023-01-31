@@ -26,6 +26,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
+        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
 
         self.pushButtonPush.clicked.connect(self.pushUpstream)
         self.pushButtonPull.clicked.connect(self.pullUpstream)
@@ -136,15 +137,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
                 delta = formattedDate.date() - today
                 self.labelCountdown.setText(str(delta.days))
-                if delta.days < 1 and delta.days >= 0:
+                if delta.days == 0:
                     self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(204, 51, 0);")
-                if delta.days > 1 and delta.days <= 2:
+                        "background-color: rgb(204,51,0);")
+                if delta.days == 1:
                     self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(255, 153, 102);")
-                if delta.days > 2 and delta.days <= 3:
+                        "background-color: rgb(255,153,102);")
+                if delta.days == 2:
                     self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(255, 204, 0);")
+                        "background-color: rgb(255,204,0);")
+                if delta.days == 3:
+                    self.frameDuedays.setStyleSheet(
+                        "background-color: rgb(153,204,51);")
                 if delta.days > 3 and delta.days <= 30:
                     self.frameDuedays.setStyleSheet(
                         "background-color: rgb(51, 153, 0);")
@@ -220,6 +224,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
+
+    def sortTasks(self, byWhat, direction):
+        sortTodos(byWhat, direction)
+        self.clearMainWindow()
+        self.populateTags()
+        self.populateTable()
+
 
     def editTagsDialog(self):
         dlg = EditTagsDialog()
