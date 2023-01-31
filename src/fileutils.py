@@ -63,15 +63,14 @@ def createTodo(tag, summary, due, uid, cal):
     readLocalFile("tags")
     tags = readLocalFile.data
     newTag = tags.copy()
-    
+
     readLocalFile("todos")
     todos = readLocalFile.data
-           
+
     key = "todos"
     num = random.randint(200, 15000)
     num2 = random.randint(200, 15000)
 
-            
     newTodoData = {
         "SUMMARY": summary,
         "INCALENDAR": cal
@@ -81,10 +80,10 @@ def createTodo(tag, summary, due, uid, cal):
         newTodoData["DUE"] = str(due)
     if tag != None:
         newTodoData["CATEGORIES"] = tag
-        
+
         if tag not in tags.keys():
             newTag[tag] = {}
-            changeLocalData(newTag, "tags") 
+            changeLocalData(newTag, "tags")
     if uid != None:
         newTodoData["UID"] = uid
         deleteTodoByUID(uid)
@@ -92,8 +91,8 @@ def createTodo(tag, summary, due, uid, cal):
         newTodoData["UID"] = str(num)
     newTodo = {
         num2: newTodoData
-    }   
-    
+    }
+
     changeLocalData(newTodo, key)
 
 # seach for a todo in the local json by uid, then delete the number assigned to it
@@ -125,23 +124,23 @@ def deleteTodoByUID(uid):
     for t, v in localTodos.items():
         newDict[j] = v
         j = j + 1
-    
+
     tagExist = False
     for t in newDict.values():
         if "CATEGORIES" in t:
             if "CATEGORIES" in delDict.keys():
                 if delDict["CATEGORIES"] == t["CATEGORIES"]:
                     tagExist = True
-    
+
     if tagExist == False:
         if "CATEGORIES" in delDict.keys():
             del newTag[delDict["CATEGORIES"]]
             changeLocalData(None, "tags")
             changeLocalData(newTag, "tags")
 
-            
     changeLocalData(None, "todos")
     changeLocalData(newDict, "todos")
+
 
 def sortTodos(byWhat, direction):
     readLocalFile("todos")
@@ -150,7 +149,7 @@ def sortTodos(byWhat, direction):
     deltaList = []
 
     if byWhat == "Due Date":
-        
+
         for t in todos.values():
             if "DUE" in t.keys():
                 rawDate = t["DUE"]
@@ -162,8 +161,6 @@ def sortTodos(byWhat, direction):
                 formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
                 delta = formattedDate.date() - today
                 deltaList.append(delta.days)
-
-        
 
         if direction == "Ascending":
             newTaskDict = {}
@@ -180,7 +177,8 @@ def sortTodos(byWhat, direction):
 
                     if rawDate != None:
                         today = date.today()
-                        formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
+                        formattedDate = datetime.strptime(
+                            rawDate, 'date(%Y, %m, %d)')
                         delta = formattedDate.date() - today
 
                         if deltaList[0] == delta.days:
@@ -189,16 +187,10 @@ def sortTodos(byWhat, direction):
                             i = i + 1
                             j = j + 1
 
-
         for t in todos.values():
             if "DUE" not in t.keys():
-                    newTaskDict[i] = t
-                    i = i + 1
+                newTaskDict[i] = t
+                i = i + 1
 
-        
         changeLocalData(None, "todos")
         changeLocalData(newTaskDict, "todos")
-        
-                
-
-

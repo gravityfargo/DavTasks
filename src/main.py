@@ -26,7 +26,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
-        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
+        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
+            self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
 
         self.pushButtonPush.clicked.connect(self.pushUpstream)
         self.pushButtonPull.clicked.connect(self.pullUpstream)
@@ -190,18 +191,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clearOneTaskMainWindow(self):
         if len(self.uidMoverDist) > 0:
             for t in self.uidMoverDist:
-                widget = self.todosFrame.findChild(QWidget, self.uidMoverDist[t])
+                widget = self.todosFrame.findChild(
+                    QWidget, self.uidMoverDist[t])
                 if widget != None:
                     widget.deleteLater()
-                    
+
         self.todosFrame.update()
-            
+
     def clearMainWindow(self):
         self.listWidgetTags.clear()
         readLocalFile("todos")
         todos = readLocalFile.data
         for t in todos.values():
-            
+
             uid = t["UID"]
             widget = self.todosFrame.findChild(QWidget, uid)
             if widget != None:
@@ -230,7 +232,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
-
 
     def editTagsDialog(self):
         dlg = EditTagsDialog()
@@ -363,7 +364,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         saveButton = QPushButton("Save")
         deleteButton = QPushButton("Delete")
         applyButton = QPushButton("Apply")
-        
+
         self.dateEdit.setDate(date.today())
 
         if uid == None:
@@ -403,7 +404,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         else:
             tag = self.comboBoxTags.currentText()
             newTask['CATEGORIES'] = self.comboBoxTags.currentText()
-            
+
         if self.dateEdit.isEnabled():
             nDS = self.dateEdit.date().toPyDate()
             formattedDate = nDS.strftime("date(%Y, %m, %d)")
