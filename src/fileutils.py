@@ -129,14 +129,15 @@ def deleteTodoByUID(uid):
     tagExist = False
     for t in newDict.values():
         if "CATEGORIES" in t:
-            if delDict["CATEGORIES"]:
+            if "CATEGORIES" in delDict.keys():
                 if delDict["CATEGORIES"] == t["CATEGORIES"]:
                     tagExist = True
     
     if tagExist == False:
-        del newTag[delDict["CATEGORIES"]]
-        changeLocalData(None, "tags")
-        changeLocalData(newTag, "tags")
+        if "CATEGORIES" in delDict.keys():
+            del newTag[delDict["CATEGORIES"]]
+            changeLocalData(None, "tags")
+            changeLocalData(newTag, "tags")
 
             
     changeLocalData(None, "todos")
