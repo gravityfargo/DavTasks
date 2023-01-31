@@ -10,6 +10,7 @@ from gui.edittask import *
 from gui.edittags import *
 from gui.mainwindow import Ui_MainWindow
 from gui.settingsdialog import Ui_DialogSettings
+from gui.notificationDialog import Ui_notificationDialog
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -24,6 +25,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populateTags()
         self.populateTable()
 
+        
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
         self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
@@ -213,10 +215,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.todosFrame.update()
 
     def pullUpstream(self):
+        # self.notificationDialog("pull")
         self.clearMainWindow()
         compareData(False)
         self.populateTags()
         self.populateTable()
+        # self.notificationDialog("close")
 
     def pushUpstream(self):
         compareData(True)
@@ -226,7 +230,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
-
+        
     def sortTasks(self, byWhat, direction):
         sortTodos(byWhat, direction)
         self.clearMainWindow()
@@ -241,6 +245,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def settingsDialog(self):
         dlg = SettingsDialog()
         dlg.exec()
+
+    # def notificationDialog(self, purpose):
+    #     dlg = NotificationDialog(purpose)
+    #     dlg.exec()
 
     def taskDialog(self):
 
@@ -461,6 +469,18 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         for c in self.settings["CALENDARS"]:
             self.comboBoxCalendars.addItem(c)
 
+# this will require threading!
+
+# class NotificationDialog(QDialog, Ui_notificationDialog):
+#     def __init__(self, purpose, *args, obj=None, **kwargs):
+#         super(NotificationDialog, self).__init__(*args, **kwargs)
+#         self.setupUi(self)
+#         lastUse = "pull"
+#         if purpose == "pull":
+#             self.labelText.setText("Pull in Progress")
+#             self.labelDesc.setText("This dialog will close once the pull is complete.")
+#         if purpose == "close":
+#             self.accept()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
