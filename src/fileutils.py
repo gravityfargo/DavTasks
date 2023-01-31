@@ -64,16 +64,13 @@ def createTodo(tag, summary, due, uid, cal):
     tags = readLocalFile.data
     newTag = tags.copy()
     
-    if tag not in tags.values():
-        newTag[tag] = {}
-        changeLocalData(newTag, "tags")
-    
+    readLocalFile("todos")
+    todos = readLocalFile.data
+           
     key = "todos"
     num = random.randint(200, 15000)
     num2 = random.randint(200, 15000)
 
-    readLocalFile("todos")
-    todos = readLocalFile.data
             
     newTodoData = {
         "SUMMARY": summary,
@@ -84,6 +81,10 @@ def createTodo(tag, summary, due, uid, cal):
         newTodoData["DUE"] = str(due)
     if tag != None:
         newTodoData["CATEGORIES"] = tag
+        
+        if tag not in tags.keys():
+            newTag[tag] = {}
+            changeLocalData(newTag, "tags") 
     if uid != None:
         newTodoData["UID"] = uid
         deleteTodoByUID(uid)
@@ -91,7 +92,8 @@ def createTodo(tag, summary, due, uid, cal):
         newTodoData["UID"] = str(num)
     newTodo = {
         num2: newTodoData
-    }
+    }   
+    
     changeLocalData(newTodo, key)
 
 # seach for a todo in the local json by uid, then delete the number assigned to it
@@ -99,23 +101,43 @@ def createTodo(tag, summary, due, uid, cal):
 
 
 def deleteTodoByUID(uid):
+    readLocalFile("tags")
+    tags = readLocalFile.data
+    newTag = tags.copy()
+
     newDict = {}
     delDict = {}
     readLocalFile("todos")
     todos = readLocalFile.data
     localTodos = todos.copy()
+
     i = 0
     for x, y in todos.items():
         if uid in y.values():
             delDict["INCALENDAR"] = y["INCALENDAR"]
+            if "CATEGORIES" in y.keys():
+                delDict["CATEGORIES"] = y["CATEGORIES"]
             delDict["UID"] = uid
             i = x
+
     j = 0
     del localTodos[i]
-    
     for t, v in localTodos.items():
         newDict[j] = v
         j = j + 1
-        
+    
+    tagExist = False
+    for t in newDict.values():
+        if "CATEGORIES" in t:
+            if delDict["CATEGORIES"]:
+                if delDict["CATEGORIES"] == t["CATEGORIES"]:
+                    tagExist = True
+    
+    if tagExist == False:
+        del newTag[delDict["CATEGORIES"]]
+        changeLocalData(None, "tags")
+        changeLocalData(newTag, "tags")
+
+            
     changeLocalData(None, "todos")
     changeLocalData(newDict, "todos")

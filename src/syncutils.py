@@ -37,7 +37,6 @@ def compareData(bool):
             if localTasks[lt] not in pulledTasks.values():
                 davconnect.pushUpstream(localTasks[lt], "Create")
                 
-    
         print("Push Complete")
         
     if bool == False:

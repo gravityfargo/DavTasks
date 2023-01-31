@@ -214,8 +214,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def pushUpstream(self):
         compareData(True)
-        self.populateTags()
-        self.populateTable()
 
     def pullLocalData(self):
         self.clearOneTaskMainWindow()
