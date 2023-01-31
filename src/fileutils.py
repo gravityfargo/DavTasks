@@ -146,10 +146,8 @@ def sortTodos(byWhat, direction):
     readLocalFile("todos")
     todos = readLocalFile.data
 
-    deltaList = []
-
     if byWhat == "Due Date":
-
+        deltaList = []
         for t in todos.values():
             if "DUE" in t.keys():
                 rawDate = t["DUE"]
@@ -165,7 +163,6 @@ def sortTodos(byWhat, direction):
         if direction == "Ascending":
             newTaskDict = {}
             i = 0
-            j = 0
             deltaList.sort()
 
             for x in deltaList:
@@ -185,12 +182,57 @@ def sortTodos(byWhat, direction):
                             newTaskDict[i] = t
                             del deltaList[0]
                             i = i + 1
-                            j = j + 1
 
         for t in todos.values():
             if "DUE" not in t.keys():
                 newTaskDict[i] = t
                 i = i + 1
-
         changeLocalData(None, "todos")
         changeLocalData(newTaskDict, "todos")
+
+
+
+    if byWhat == "Tag":
+        changeLocalData(None, "todos")
+
+        tagsList = []
+        newTaskDict = {}
+        for t in todos.values():
+            if "CATEGORIES" in t.keys():
+                tag = t["CATEGORIES"]
+                tagsList.append(tag)
+
+        
+        if direction == "Ascending":
+            tagsList.sort()
+            i = 0
+            for x in tagsList:
+                for key, value in todos.copy().items():
+                    if "CATEGORIES" in value.keys():
+
+                        if value["CATEGORIES"] == x:
+                            newTaskDict[i] = value
+                            i = i + 1
+                            del todos[key]
+
+        if direction == "Descending":
+            tagsList.sort(reverse=True)
+            i = 0
+            for x in tagsList:
+                for key, value in todos.copy().items():
+                    if "CATEGORIES" in value.keys():
+
+                        if value["CATEGORIES"] == x:
+                            newTaskDict[i] = value
+                            i = i + 1
+                            del todos[key]
+
+        for t in todos.values():
+            if "CATEGORIES" not in t.keys():
+                newTaskDict[i] = t
+                i = i + 1
+            
+        
+        changeLocalData(newTaskDict, "todos")
+        
+

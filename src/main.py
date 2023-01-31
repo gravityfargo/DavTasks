@@ -56,8 +56,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frameTodo = QtWidgets.QWidget(self.todosFrame)
             self.frameTodo.setStyleSheet("background-color: rgb(51, 51, 51);")
             self.frameTodo.setObjectName(uid)
+
             self.frameTodo.setMinimumSize(QtCore.QSize(0, 50))
-            self.frameTodo.setMaximumSize(QtCore.QSize(16777215, 50))
+            self.frameTodo.setMaximumSize(QtCore.QSize(16777215, 60))
 
             self.gridLayoutTodo = QtWidgets.QGridLayout(self.frameTodo)
             self.gridLayoutTodo.setContentsMargins(0, 0, 0, 0)
@@ -69,7 +70,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayoutTag.setContentsMargins(0, 0, 0, 0)
 
             self.frameTagColor = QtWidgets.QFrame()
-            self.frameTagColor.setMaximumSize(QtCore.QSize(10, 50))
+            self.frameTagColor.setMaximumSize(QtCore.QSize(10, 60))
             self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
 
             self.labelTag = QtWidgets.QLabel()
@@ -91,6 +92,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.labelSummary = QtWidgets.QLabel()
             self.labelSummary.setText(summary)
             self.labelSummary.setWordWrap(True)
+            self.labelSummary.setStyleSheet("font: 12pt \"Noto Sans\";")
             self.labelSummary.setContentsMargins(0, 0, 0, 0)
             self.labelSummary.setAlignment(
                 QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
@@ -115,14 +117,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frameDate = QtWidgets.QFrame()
             self.gridLayoutTodo.addWidget(self.frameDate, 0, 3, 1, 1)
 
-            self.frameEdit = QtWidgets.QFrame()
-            self.frameEdit.setStyleSheet("background-color: rgb(58, 58, 58);")
-            self.gridLayoutTodo.addWidget(self.frameEdit, 0, 4, 1, 1)
-
-            self.pushButtonEdit = QtWidgets.QPushButton(self.frameEdit)
-            self.pushButtonEdit.setText("\U0001F5D1")
+            self.pushButtonEdit = QtWidgets.QPushButton()
+            self.pushButtonEdit.setText("Edit")
             self.pushButtonEdit.clicked.connect(self.taskDialog)
             self.pushButtonEdit.setObjectName("pushButtonEdit_" + uid)
+            self.pushButtonEdit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+            self.gridLayoutTodo.addWidget(self.pushButtonEdit, 0, 4, 1, 1)
 
             self.gridLayoutTodo.setColumnStretch(0, 1)
             self.gridLayoutTodo.setColumnStretch(1, 5)
@@ -236,6 +236,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable()
+        print("Done")
 
     def editTagsDialog(self):
         dlg = EditTagsDialog()
