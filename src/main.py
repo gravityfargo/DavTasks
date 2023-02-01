@@ -92,6 +92,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.labelSummary = QtWidgets.QLabel()
             self.labelSummary.setText(summary)
             self.labelSummary.setWordWrap(True)
+            self.labelSummary.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.LinksAccessibleByMouse|QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
+
             self.labelSummary.setStyleSheet("font: 12pt \"Noto Sans\";")
             self.labelSummary.setContentsMargins(0, 0, 0, 0)
             self.labelSummary.setAlignment(
