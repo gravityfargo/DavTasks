@@ -23,7 +23,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.uidMoverDist = {}
 
         self.populateTags()
-        self.populateTable()
+        self.populateTable(None)
 
         
         self.pushButtonAdd.clicked.connect(self.taskDialog)
@@ -34,10 +34,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonPush.clicked.connect(self.pushUpstream)
         self.pushButtonPull.clicked.connect(self.pullUpstream)
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
+        self.listWidgetTags.itemPressed.connect(lambda: self.filterTag(self.listWidgetTags.currentItem()))
 
-    def populateTable(self):
-        readLocalFile("todos")
-        todos = readLocalFile.data
+    def populateTable(self, tagFilter):
+
+        if tagFilter == None:
+            readLocalFile("todos")
+            todos = readLocalFile.data
+        elif tagFilter != None:
+            todos = filterByTags(tagFilter)
+
 
         readLocalFile("tags")
         tags = readLocalFile.data
@@ -74,7 +80,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
 
             self.labelTag = QtWidgets.QLabel()
-
+            self.labelTag.setStyleSheet("color: rgb(120, 120, 120);")
             self.gridLayoutTag.addWidget(self.labelTag, 0, 1, 1, 1)
 
             if "CATEGORIES" in t:
@@ -221,7 +227,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         compareData(False)
         self.populateTags()
-        self.populateTable()
+        self.populateTable(None)
         # self.notificationDialog("close")
 
     def pushUpstream(self):
@@ -231,14 +237,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearOneTaskMainWindow()
         self.clearMainWindow()
         self.populateTags()
-        self.populateTable()
+        self.populateTable(None)
         
     def sortTasks(self, byWhat, direction):
         sortTodos(byWhat, direction)
         self.clearMainWindow()
         self.populateTags()
-        self.populateTable()
+        self.populateTable(None)
         print("Done")
+
+    def filterTag(self, tag):
+        print(str(self.listWidgetTags.currentItem()))
 
     def editTagsDialog(self):
         dlg = EditTagsDialog()
@@ -345,6 +354,7 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
                 newSettings["CALENDARS"] = self.settings["CALENDARS"]
 
             changeLocalData(newSettings, "settings")
+            getCalendars()
             self.accept()
         else:
             self.warningDialog()

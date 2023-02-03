@@ -31,13 +31,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonEditTags">
-        <property name="text">
-         <string>Edit Tags</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="pushButtonSortTags">
         <property name="text">
          <string>Sort Tags</string>
@@ -100,6 +93,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QPushButton" name="pushButtonEditTags">
+        <property name="text">
+         <string>Edit Tags</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="pushButtonSettings">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -124,7 +124,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>649</width>
+         <width>626</width>
          <height>774</height>
         </rect>
        </property>
@@ -182,11 +182,13 @@
          <property name="styleSheet">
           <string notr="true">font: 14pt &quot;Noto Sans&quot;;</string>
          </property>
-         <item>
-          <property name="text">
-           <string>All Tasks</string>
-          </property>
-         </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="pushButtonCompleted">
+         <property name="text">
+          <string>Completed</string>
+         </property>
         </widget>
        </item>
       </layout>

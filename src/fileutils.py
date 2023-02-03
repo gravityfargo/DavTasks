@@ -3,7 +3,6 @@ import json
 import os
 from datetime import date, datetime
 import random
-import davconnect
 
 dataFile = "src/localData.json"
 settingsAr = {"URL": "", "USERNAME": "", "PASSWORD": "", "CALENDARS": ""}
@@ -64,8 +63,6 @@ def createTodo(tag, summary, due, uid, cal):
     tags = readLocalFile.data
     newTag = tags.copy()
 
-    readLocalFile("todos")
-    todos = readLocalFile.data
 
     key = "todos"
     num = random.randint(200, 15000)
@@ -251,3 +248,23 @@ def sortTodos(byWhat, direction):
                 i = i + 1
 
         changeLocalData(newTaskDict, "todos")
+
+
+
+def filterByTags(tag):
+    readLocalFile("todos")
+    todos = readLocalFile.data
+
+    changeLocalData(None, "todos")
+    newTaskDict = {}
+    i = 0
+
+    for key, value in todos.copy().items():
+        if "CATEGORIES" in value.keys():
+
+            if value["CATEGORIES"] == tag:
+                newTaskDict[i] = value
+                i = i + 1
+                del todos[key]
+
+    return newTaskDict

@@ -35,7 +35,7 @@ def compareData(bool):
         # create task on server that doesnt exist on the server
         for lt in localTasks:
             if localTasks[lt] not in pulledTasks.values():
-                davconnect.pushUpstream(localTasks[lt], "Create")
+                pushUpstream(localTasks[lt], "Create")
                 
         print("Push Complete")
         
