@@ -10,40 +10,41 @@ from gui.edittask import *
 from gui.edittags import *
 from gui.mainwindow import Ui_MainWindow
 from gui.settingsdialog import Ui_DialogSettings
-from gui.notificationDialog import Ui_notificationDialog
+# from gui.notificationDialog import Ui_notificationDialog
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
-        # loadUi("mainwindow.ui", self)
         self.setWindowTitle("DAV Tasks")
 
         self.uidMoverDist = {}
 
         self.populateTags()
-        self.populateTable(None)
+        self.populateTable(None, None, None, None)
 
-        
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
         self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
             self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
 
-        self.pushButtonPush.clicked.connect(self.pushUpstream)
-        self.pushButtonPull.clicked.connect(self.pullUpstream)
+        self.pushButtonSync.clicked.connect(self.syncData)
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
-        self.listWidgetTags.itemPressed.connect(lambda: self.filterTag(self.listWidgetTags.currentItem()))
+        self.listWidgetTags.itemPressed.connect(
+            lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
 
-    def populateTable(self, tagFilter):
-
-        if tagFilter == None:
+    def populateTable(self, sortOrFilter, filterBy, sortBy, sortDirection):
+        # filterBy must be a tag
+        # sortBy is a comboBoxSortTasks option
+        # sortDirection is asc / dec
+        if sortOrFilter == None:
             readLocalFile("todos")
             todos = readLocalFile.data
-        elif tagFilter != None:
-            todos = filterByTags(tagFilter)
-
+        elif sortOrFilter == "Filter":
+            todos = filterByTags(filterBy)
+        elif sortOrFilter == "Sort":
+            todos = sortTodos(sortBy, sortDirection)
 
         readLocalFile("tags")
         tags = readLocalFile.data
@@ -98,7 +99,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.labelSummary = QtWidgets.QLabel()
             self.labelSummary.setText(summary)
             self.labelSummary.setWordWrap(True)
-            self.labelSummary.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.LinksAccessibleByMouse|QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
+            self.labelSummary.setTextInteractionFlags(
+                QtCore.Qt.TextInteractionFlag.LinksAccessibleByMouse | QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
             self.labelSummary.setStyleSheet("font: 12pt \"Noto Sans\";")
             self.labelSummary.setContentsMargins(0, 0, 0, 0)
@@ -129,7 +131,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.pushButtonEdit.setText("Edit")
             self.pushButtonEdit.clicked.connect(self.taskDialog)
             self.pushButtonEdit.setObjectName("pushButtonEdit_" + uid)
-            self.pushButtonEdit.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+            self.pushButtonEdit.setSizePolicy(
+                QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
             self.gridLayoutTodo.addWidget(self.pushButtonEdit, 0, 4, 1, 1)
 
             self.gridLayoutTodo.setColumnStretch(0, 1)
@@ -145,7 +148,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             else:
                 today = date.today()
-                formattedDate = datetime.strptime(rawDate, 'date(%Y, %m, %d)')
+                # 2023-02-04 17:00:00
+                formattedDate = datetime.strptime(rawDate, '%Y-%m-%d %H:%M:%S')
                 delta = formattedDate.date() - today
                 self.labelCountdown.setText(str(delta.days))
                 if delta.days == 0:
@@ -187,7 +191,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def populateTags(self):
         readLocalFile("tags")
         tags = readLocalFile.data
-
+        item = QListWidgetItem()
+        item.setText("All Tags")
+        self.listWidgetTags.addItem(item)
         for t in tags:
             item = QListWidgetItem()
             item.setText(t)
@@ -197,16 +203,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 item.setBackground(QColor(tags[t]))
             self.listWidgetTags.addItem(item)
         self.listWidgetTags.sortItems(Qt.SortOrder.AscendingOrder)
-
-    def clearOneTaskMainWindow(self):
-        if len(self.uidMoverDist) > 0:
-            for t in self.uidMoverDist:
-                widget = self.todosFrame.findChild(
-                    QWidget, self.uidMoverDist[t])
-                if widget != None:
-                    widget.deleteLater()
-
-        self.todosFrame.update()
 
     def clearMainWindow(self):
         self.listWidgetTags.clear()
@@ -222,45 +218,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
         self.todosFrame.update()
 
-    def pullUpstream(self):
-        # self.notificationDialog("pull")
+    def syncData(self):
+        # updates local tasks and tags with the lastest server version
+        # deletes no existant tasks in local and creates those that are missing
         self.clearMainWindow()
-        compareData(False)
+        serverSync("All")
         self.populateTags()
-        self.populateTable(None)
-        # self.notificationDialog("close")
+        self.populateTable(None, None, None, None)
 
-    def pushUpstream(self):
-        compareData(True)
-
-    def pullLocalData(self):
-        self.clearOneTaskMainWindow()
-        self.clearMainWindow()
-        self.populateTags()
-        self.populateTable(None)
-        
     def sortTasks(self, byWhat, direction):
-        sortTodos(byWhat, direction)
         self.clearMainWindow()
         self.populateTags()
-        self.populateTable(None)
-        print("Done")
+        self.populateTable("Sort", None, byWhat, direction)
 
     def filterTag(self, tag):
-        print(str(self.listWidgetTags.currentItem()))
+        self.clearMainWindow()
+        self.populateTags()
+        if tag == "All Tags":
+            self.populateTable(None, None, None, None)
+        else:
+            self.populateTable("Filter", tag, None, None)
 
     def editTagsDialog(self):
         dlg = EditTagsDialog()
         if dlg.exec():
-            self.pullLocalData()
+            self.clearMainWindow()
+            self.populateTags()
+            self.populateTable(None, None, None, None)
 
     def settingsDialog(self):
         dlg = SettingsDialog()
         dlg.exec()
-
-    # def notificationDialog(self, purpose):
-    #     dlg = NotificationDialog(purpose)
-    #     dlg.exec()
 
     def taskDialog(self):
 
@@ -272,7 +260,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dlg = TaskDialog(uid)
 
         if dlg.exec():
-            self.pullLocalData()
+            self.clearMainWindow()
+            self.populateTags()
+            self.populateTable(None, None, None, None)
 
 
 class EditTagsDialog(QDialog, Ui_EditTagDialog):
@@ -383,7 +373,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         self.populateCalendars()
 
         saveButton = QPushButton("Save")
-        deleteButton = QPushButton("Delete")
+        completeButton = QPushButton("Mark Complete")
         applyButton = QPushButton("Apply")
 
         self.dateEdit.setDate(date.today())
@@ -397,45 +387,56 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         else:
             self.setWindowTitle("DAV Tasks - Edit Task")
             self.buttonBox.addButton(
-                deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
+                completeButton, self.buttonBox.ButtonRole.DestructiveRole)
             self.buttonBox.addButton(
                 applyButton, self.buttonBox.ButtonRole.ApplyRole)
             self.populateTags()
             self.populateForm(uid)
 
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
-        saveButton.clicked.connect(lambda: self.submitTodo(None))
-        deleteButton.clicked.connect(lambda: self.deleteTodo(uid))
-        applyButton.clicked.connect(lambda: self.submitTodo(uid))
+        saveButton.clicked.connect(self.newTask)
+        completeButton.clicked.connect(lambda: self.completeTodo(uid))
+        applyButton.clicked.connect(lambda: self.modifyTask(uid))
         self.buttonBox.rejected.connect(self.reject)
 
-    def deleteTodo(self, uid):
-        deleteTodoByUID(uid)
+    def completeTodo(self, uid):
+        completeTodoSync(uid)
         self.accept()
 
-    def submitTodo(self, uid):
-
-        newTask = {
+    def modifyTask(self, uid):
+        cal = self.comboBoxCalendars.currentText()
+        moddedTask = {
             "SUMMARY": self.lineEditSummary.text(),
-            "INCALENDAR": self.comboBoxCalendars.currentText(),
+            "UID": uid
         }
 
-        if not self.comboBoxTags.currentText():
-            tag = None
-        else:
-            tag = self.comboBoxTags.currentText()
+        if self.comboBoxTags.currentText():
+            moddedTask['CATEGORIES'] = self.comboBoxTags.currentText()
+
+        if self.dateEdit.isEnabled():
+            nDS = self.dateEdit.date().toPyDate()
+            formattedDate = nDS.strftime("%Y-%m-%d %H:%M:%S")
+            moddedTask["DUE"] = formattedDate
+
+        modifyTodo(moddedTask, cal)
+        self.accept()
+
+    def newTask(self):
+
+        cal = self.comboBoxCalendars.currentText()
+        newTask = {
+            "SUMMARY": self.lineEditSummary.text()
+        }
+
+        if self.comboBoxTags.currentText():
             newTask['CATEGORIES'] = self.comboBoxTags.currentText()
 
         if self.dateEdit.isEnabled():
             nDS = self.dateEdit.date().toPyDate()
-            formattedDate = nDS.strftime("date(%Y, %m, %d)")
-            createTodo(tag, self.lineEditSummary.text(),
-                       formattedDate, uid, self.comboBoxCalendars.currentText())
+            formattedDate = nDS.strftime("%Y-%m-%d %H:%M:%S")
             newTask["DUE"] = formattedDate
-        else:
-            createTodo(tag, self.lineEditSummary.text(), None,
-                       uid, self.comboBoxCalendars.currentText())
 
+        createTodo(newTask, cal)
         self.accept()
 
     def toggleDatePicker(self):
@@ -455,7 +456,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                     if "DUE" in t.keys():
                         currentDueRaw = t["DUE"]
                         currentDue = datetime.strptime(
-                            currentDueRaw, 'date(%Y, %m, %d)')
+                            currentDueRaw, '%Y-%m-%d %H:%M:%S')
 
                     if "CATEGORIES" in t.keys():
                         self.comboBoxTags.setCurrentText(t["CATEGORIES"])
@@ -481,19 +482,8 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
     def populateCalendars(self):
         for c in self.settings["CALENDARS"]:
             self.comboBoxCalendars.addItem(c)
+        self.accept()
 
-# this will require threading!
-
-# class NotificationDialog(QDialog, Ui_notificationDialog):
-#     def __init__(self, purpose, *args, obj=None, **kwargs):
-#         super(NotificationDialog, self).__init__(*args, **kwargs)
-#         self.setupUi(self)
-#         lastUse = "pull"
-#         if purpose == "pull":
-#             self.labelText.setText("Pull in Progress")
-#             self.labelDesc.setText("This dialog will close once the pull is complete.")
-#         if purpose == "close":
-#             self.accept()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

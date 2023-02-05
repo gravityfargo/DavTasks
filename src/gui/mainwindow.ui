@@ -79,16 +79,9 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButtonPush">
+       <widget class="QPushButton" name="pushButtonSync">
         <property name="text">
-         <string>Push to Server</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonPull">
-        <property name="text">
-         <string>Pull from Server</string>
+         <string>Sync With Server</string>
         </property>
        </widget>
       </item>
@@ -124,7 +117,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>626</width>
+         <width>622</width>
          <height>774</height>
         </rect>
        </property>
