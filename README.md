@@ -1,6 +1,6 @@
 # DavTasks
 
-![image](https://user-images.githubusercontent.com/61644499/216468888-3fdb02a0-1c60-46bd-931e-ffa8dba1c4c5.png)
+![image](https://user-images.githubusercontent.com/61644499/216855332-34282fe5-5ee6-4a15-93e2-5d8d4ae1a796.png)
 
 - task app using caldav
 - use categories as tags to sort
