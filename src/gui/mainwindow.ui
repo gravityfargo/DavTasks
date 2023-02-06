@@ -227,7 +227,7 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="0" column="3">
+       <item row="0" column="4">
         <widget class="QPushButton" name="pushButtonSync">
          <property name="text">
           <string>Sync With Server</string>
@@ -272,6 +272,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="pushButtonRefresh">
+         <property name="text">
+          <string>Refresh Table</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

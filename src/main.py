@@ -33,6 +33,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
         self.listWidgetTags.itemPressed.connect(
             lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
+        self.pushButtonRefresh.clicked.connect(self.refreshGUI)
 
     def populateTable(self, sortOrFilter, filterBy, sortBy, sortDirection):
         # filterBy must be a tag
@@ -61,7 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 rawDate = None
 
             self.frameTodo = QtWidgets.QWidget(self.todosFrame)
-            self.frameTodo.setStyleSheet("background-color: rgb(51, 51, 51);")
+            self.frameTodo.setStyleSheet("background-color: rgb(30,30,30);")
             self.frameTodo.setObjectName(uid)
 
             self.frameTodo.setMinimumSize(QtCore.QSize(0, 50))
@@ -126,6 +127,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             self.frameDate = QtWidgets.QFrame()
             self.gridLayoutTodo.addWidget(self.frameDate, 0, 3, 1, 1)
+            self.gridLayoutDate = QtWidgets.QGridLayout(self.frameDate)
+            
 
             self.pushButtonEdit = QtWidgets.QPushButton()
             self.pushButtonEdit.setText("Edit")
@@ -175,11 +178,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.frameDuedays.setStyleSheet(
                         "background-color: rgb(204, 51, 0);")
                     self.labelCountdown.setText("Overdue")
-                self.labelDate = QtWidgets.QLabel(self.frameDate)
-                self.labelDate.setText(
-                    str(formattedDate.month) + "-" + str(formattedDate.day))
+                    
+                self.labelDate = QtWidgets.QLabel()
+                self.labelDate.setText(str(formattedDate.month) + "-" + str(formattedDate.day))
                 self.labelDate.setAlignment(
                     QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
+                self.gridLayoutDate.addWidget(self.labelDate, 0, 0, 1, 1)
+                
+            
 
             self.verticalLayoutTodosFrame.addWidget(self.frameTodo)
             i = i + 1
@@ -223,6 +229,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # deletes no existant tasks in local and creates those that are missing
         self.clearMainWindow()
         serverSync("All")
+        self.populateTags()
+        self.populateTable(None, None, None, None)
+
+    def refreshGUI(self):
+        self.clearMainWindow()
         self.populateTags()
         self.populateTable(None, None, None, None)
 

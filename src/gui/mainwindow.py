@@ -110,7 +110,7 @@ class Ui_MainWindow(object):
         self.gridLayout_4.setObjectName("gridLayout_4")
         self.pushButtonSync = QtWidgets.QPushButton(parent=self.frameToolbarSettings)
         self.pushButtonSync.setObjectName("pushButtonSync")
-        self.gridLayout_4.addWidget(self.pushButtonSync, 0, 3, 1, 1)
+        self.gridLayout_4.addWidget(self.pushButtonSync, 0, 4, 1, 1)
         self.pushButtonEditTags = QtWidgets.QPushButton(parent=self.frameToolbarSettings)
         self.pushButtonEditTags.setObjectName("pushButtonEditTags")
         self.gridLayout_4.addWidget(self.pushButtonEditTags, 0, 2, 1, 1)
@@ -125,6 +125,9 @@ class Ui_MainWindow(object):
         self.gridLayout_4.addWidget(self.pushButtonSettings, 0, 0, 1, 1)
         spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.gridLayout_4.addItem(spacerItem, 0, 1, 1, 1)
+        self.pushButtonRefresh = QtWidgets.QPushButton(parent=self.frameToolbarSettings)
+        self.pushButtonRefresh.setObjectName("pushButtonRefresh")
+        self.gridLayout_4.addWidget(self.pushButtonRefresh, 0, 3, 1, 1)
         self.gridLayout.addWidget(self.frameToolbarSettings, 2, 0, 1, 1)
         MainWindow.setCentralWidget(self.topWidget)
 
@@ -144,3 +147,4 @@ class Ui_MainWindow(object):
         self.pushButtonSync.setText(_translate("MainWindow", "Sync With Server"))
         self.pushButtonEditTags.setText(_translate("MainWindow", "Edit Tags"))
         self.pushButtonSettings.setText(_translate("MainWindow", "Settings"))
+        self.pushButtonRefresh.setText(_translate("MainWindow", "Refresh Table"))
