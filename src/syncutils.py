@@ -155,10 +155,10 @@ def serverSync(whichCalendar):
 
         for t in todos:
             upstreamTask = t.icalendar_component
-            upstreamUID = upstreamTask["UID"]
+            upstreamUID = upstreamTask["UID"].to_ical().decode()
 
             if upstreamUID in keys:
-                upstreamTagUidList.append(upstreamUID.to_ical().decode())
+                upstreamTagUidList.append(upstreamUID)
                 if "LAST-MODIFIED" in upstreamTask.keys():
                     upstreamLastMod = str(upstreamTask["LAST-MODIFIED"].dt)
                 elif "LAST-MODIFIED" not in upstreamTask.keys():
@@ -174,7 +174,7 @@ def serverSync(whichCalendar):
 
                 if upstreamLastMod != localTask["LAST-MODIFIED"]:
                     for keyToUpdate in upstreamTask.keys():
-                        if keyToUpdate == "LAST-MODIFIED" or keyToUpdate == "CREATED" or keyToUpdate == "DTSTAMP":
+                        if keyToUpdate == "LAST-MODIFIED" or keyToUpdate == "CREATED" or keyToUpdate == "DTSTAMP" or keyToUpdate == "DTSTART":
                             localTask[keyToUpdate] = str(
                                 upstreamTask[keyToUpdate].dt)
                         elif keyToUpdate == "DUE":
@@ -193,11 +193,11 @@ def serverSync(whichCalendar):
                     modifiedTasks[upstreamUID] = localTask
 
             elif upstreamUID not in keys:
-                upstreamTagUidList.append(upstreamUID.to_ical().decode())
+                upstreamTagUidList.append(upstreamUID)
                 newTask = {}
                 for keyToCreate in upstreamTask.keys():
 
-                    if keyToCreate == "LAST-MODIFIED" or keyToCreate == "CREATED" or keyToCreate == "DTSTAMP":
+                    if keyToCreate == "LAST-MODIFIED" or keyToCreate == "CREATED" or keyToCreate == "DTSTAMP" or keyToCreate == "DTSTART":
                         newTask[keyToCreate] = str(
                             upstreamTask[keyToCreate].dt)
                     elif keyToCreate == "DUE":
