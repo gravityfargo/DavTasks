@@ -30,7 +30,8 @@ def modifyTodo(taskToModify, cal):
         if "DUE" in taskToModify.keys():
             nDS = datetime.strptime(taskToModify["DUE"], "%Y-%m-%d %H:%M:%S")
             formattedDate = vDatetime(nDS).to_ical()
-            task.icalendar_component["due"] = formattedDate
+            task.icalendar_component["DTSTART"] = formattedDate
+            task.icalendar_component["DUE"] = formattedDate
 
         if "CATEGORIES" in taskToModify.keys():
             newCatList = []
