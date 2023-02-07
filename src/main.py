@@ -223,7 +223,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 widget.deleteLater()
 
         self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
-        self.todosFrame.update()
+        self.scrollAreaTodosContents.update()
 
     def syncData(self):
         # updates local tasks and tags with the lastest server version
