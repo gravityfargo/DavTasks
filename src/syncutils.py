@@ -189,6 +189,7 @@ def serverSync(whichCalendar):
                         else:
                             localTask[keyToUpdate] = upstreamTask[keyToUpdate]
 
+                    localTask["INCALENDAR"] = str(calendar)
                     modifiedTasks[upstreamUID] = localTask
 
             elif upstreamUID not in keys:
@@ -252,7 +253,6 @@ def serverSync(whichCalendar):
 
 
 def completeTodoSync(uid):
-
     readLocalFile("todos")
     todos = readLocalFile.data
     modifiedTodos = todos.copy()
@@ -260,22 +260,18 @@ def completeTodoSync(uid):
     readLocalFile("completedTodos")
     completedTodos = readLocalFile.data
     modifiedCompletedTodos = completedTodos.copy()
-
     serverConnect()
     calendar = serverConnect.my_principal.calendar(task["INCALENDAR"])
-
+    print(task["INCALENDAR"])
     taskFetched = calendar.search(
         todo=True,
-        uid=uid,
+        uid=uid
     )
-
-    modifiedCompletedTodos[uid] = task
-   
-    del modifiedTodos[uid]
-
-    taskFetched[0].complete()
-
-    print("Task marked completed.")
+    if taskFetched:
+        modifiedCompletedTodos[uid] = task
+        del modifiedTodos[uid]
+        taskFetched[0].complete()
+        print("Task marked completed.")
 
     changeLocalData(None, "todos")
     changeLocalData(modifiedTodos, "todos")

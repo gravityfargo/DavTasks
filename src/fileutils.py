@@ -2,7 +2,7 @@ import json
 import os
 from datetime import date, datetime
 
-dataFile = "src/localData.json"
+dataFile = "./src/localData.json"
 settingsAr = {"URL": "", "USERNAME": "", "PASSWORD": "", "CALENDARS": ""}
 stockData = {"settings": settingsAr, "tags": {},
              "todos": {}, "completedTodos": {}}
