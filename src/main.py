@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import sys
-from PyQt6 import *
-from PyQt6.QtCore import *
-from PyQt6.QtGui import *
-from PyQt6.QtWidgets import *
+from PyQt6.QtCore import QRect,  Qt, QSize
+from PyQt6.QtGui import QFont, QColor, QIcon
+from PyQt6.QtWidgets import QApplication, QMessageBox, QColorDialog, QMainWindow, QListWidgetItem, QFrame, QGridLayout, QWidget, QLabel, QPushButton, QDialog
+import qtawesome as qta
 from davconnect import *
 from fileutils import *
 from syncutils import *
@@ -19,8 +19,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
         self.setWindowTitle("DAV Tasks")
-
-        self.uidMoverDist = {}
 
         self.populateTags()
         self.populateTable(None, None, None, None)
@@ -52,8 +50,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         tags = readLocalFile.data
         i = 0
 
-        self.verticalLayoutTodosFrame.setSpacing(2)
         for t in todos.values():
+
+            item = QListWidgetItem(self.listWidgetTasks)
+            
             uid = t["UID"]
             summary = t["SUMMARY"]
 
@@ -62,27 +62,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 rawDate = None
 
-            self.frameTodo = QtWidgets.QWidget(self.todosFrame)
+            self.frameTodo = QWidget()
             self.frameTodo.setStyleSheet("background-color: rgb(30,30,30);")
+            self.frameTodo.setGeometry(QRect(0, 0, 16777215, 60))
+
             self.frameTodo.setObjectName(uid)
 
-            self.frameTodo.setMinimumSize(QtCore.QSize(0, 50))
-            self.frameTodo.setMaximumSize(QtCore.QSize(16777215, 60))
-
-            self.gridLayoutTodo = QtWidgets.QGridLayout(self.frameTodo)
+            self.gridLayoutTodo = QGridLayout(self.frameTodo)
             self.gridLayoutTodo.setContentsMargins(0, 0, 0, 0)
 
-            self.frameTag = QtWidgets.QFrame()
+            self.frameTag = QFrame()
             self.gridLayoutTodo.addWidget(self.frameTag, 0, 0, 1, 1)
 
-            self.gridLayoutTag = QtWidgets.QGridLayout(self.frameTag)
+            self.gridLayoutTag = QGridLayout(self.frameTag)
             self.gridLayoutTag.setContentsMargins(0, 0, 0, 0)
 
-            self.frameTagColor = QtWidgets.QFrame()
-            self.frameTagColor.setMaximumSize(QtCore.QSize(10, 60))
+            self.frameTagColor = QFrame()
             self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
 
-            self.labelTag = QtWidgets.QLabel()
+            self.labelTag = QLabel()
             self.labelTag.setStyleSheet("color: rgb(120, 120, 120);")
             self.gridLayoutTag.addWidget(self.labelTag, 0, 1, 1, 1)
 
@@ -93,57 +91,65 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.frameTagColor.setStyleSheet(
                         "background-color: " + tags[tag] + ";")
 
-            self.frameSummary = QtWidgets.QFrame()
-            self.gridLayoutSummary = QtWidgets.QGridLayout(self.frameSummary)
+            self.frameSummary = QFrame()
+            self.gridLayoutSummary = QGridLayout(self.frameSummary)
             self.gridLayoutSummary.setSpacing(0)
             self.gridLayoutTodo.addWidget(self.frameSummary, 0, 1, 1, 1)
 
-            self.labelSummary = QtWidgets.QLabel()
+            self.labelSummary = QLabel()
             self.labelSummary.setText(summary)
             self.labelSummary.setWordWrap(True)
-            self.labelSummary.setTextInteractionFlags(
-                QtCore.Qt.TextInteractionFlag.LinksAccessibleByMouse | QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
-
-            self.labelSummary.setStyleSheet("font: 12pt \"Noto Sans\";")
+            self.labelSummary.setStyleSheet("font: 13pt \"Arial\";")
             self.labelSummary.setContentsMargins(0, 0, 0, 0)
             self.labelSummary.setAlignment(
-                QtCore.Qt.AlignmentFlag.AlignLeft | QtCore.Qt.AlignmentFlag.AlignVCenter)
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
             self.gridLayoutSummary.addWidget(self.labelSummary, 0, 0, 1, 1)
 
-            self.frameDuedays = QtWidgets.QFrame()
+            self.frameDuedays = QFrame()
             self.gridLayoutTodo.addWidget(self.frameDuedays, 0, 2, 1, 1)
 
-            self.gridLayoutCountdown = QtWidgets.QGridLayout(self.frameDuedays)
+            self.gridLayoutCountdown = QGridLayout(self.frameDuedays)
             self.gridLayoutCountdown.setContentsMargins(0, 0, 0, 0)
 
-            self.labelCountdown = QtWidgets.QLabel()
-            font = QtGui.QFont()
+            self.labelCountdown = QLabel()
+            font = QFont()
             font.setBold(True)
             self.labelCountdown.setFont(font)
             self.labelCountdown.setStyleSheet(
                 "color: rgb(0, 0, 0); font: 12pt;")
             self.gridLayoutCountdown.addWidget(self.labelCountdown, 0, 0, 1, 1)
             self.labelCountdown.setAlignment(
-                QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
 
-            self.frameDate = QtWidgets.QFrame()
+            self.frameDate = QFrame()
             self.gridLayoutTodo.addWidget(self.frameDate, 0, 3, 1, 1)
-            self.gridLayoutDate = QtWidgets.QGridLayout(self.frameDate)
+            self.gridLayoutDate = QGridLayout(self.frameDate)
             
 
-            self.pushButtonEdit = QtWidgets.QPushButton()
-            self.pushButtonEdit.setText("Edit")
+            self.pushButtonEdit = QPushButton()
             self.pushButtonEdit.clicked.connect(self.taskDialog)
             self.pushButtonEdit.setObjectName("pushButtonEdit_" + uid)
-            self.pushButtonEdit.setSizePolicy(
-                QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+            self.pushButtonEdit.setFixedSize(QtCore.QSize(30, 60))
+            pushButtonEditIcon = qta.icon("fa5.edit")
+            self.pushButtonEdit.setIcon(QIcon(pushButtonEditIcon))
+            self.pushButtonEdit.setFlat(True)
             self.gridLayoutTodo.addWidget(self.pushButtonEdit, 0, 4, 1, 1)
 
+            self.pushButtonComplete = QPushButton()
+            # self.pushButtonComplete.clicked.connect(self.taskDialog)
+            # self.pushButtonComplete.setObjectName("pushButtonEdit_" + uid)
+            self.pushButtonComplete.setFixedSize(QtCore.QSize(30, 60))
+            pushButtonCompleteIcon = qta.icon("fa.trash")
+            self.pushButtonComplete.setIcon(QIcon(pushButtonCompleteIcon))
+            self.pushButtonComplete.setFlat(True)
+            self.gridLayoutTodo.addWidget(self.pushButtonComplete, 0, 5, 1, 1)
+
             self.gridLayoutTodo.setColumnStretch(0, 1)
-            self.gridLayoutTodo.setColumnStretch(1, 5)
+            self.gridLayoutTodo.setColumnStretch(1, 6)
             self.gridLayoutTodo.setColumnStretch(2, 1)
             self.gridLayoutTodo.setColumnStretch(3, 1)
             self.gridLayoutTodo.setColumnStretch(4, 1)
+            self.gridLayoutTodo.setColumnStretch(5, 1)
 
             if rawDate == None:
                 self.frameDuedays.setStyleSheet(
@@ -179,21 +185,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.frameDuedays.setStyleSheet(
                         "background-color: rgb(204, 51, 0);")
                     self.labelCountdown.setText("Overdue")
-                    
-                self.labelDate = QtWidgets.QLabel()
+
+
+                self.labelDateDay = QLabel()
+                formattedDayofWeek = datetime.strftime(formattedDate, '%a')
+                self.labelDateDay.setText(formattedDayofWeek)
+                self.labelDateDay.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+                self.labelDateDay.setStyleSheet("color: rgb(120, 120, 120);")
+                self.gridLayoutDate.addWidget(self.labelDateDay, 0, 0, 1, 1)
+
+                self.labelDate = QLabel()
                 self.labelDate.setText(str(formattedDate.month) + "-" + str(formattedDate.day))
-                self.labelDate.setAlignment(
-                    QtCore.Qt.AlignmentFlag.AlignHCenter | QtCore.Qt.AlignmentFlag.AlignVCenter)
-                self.gridLayoutDate.addWidget(self.labelDate, 0, 0, 1, 1)
+                self.labelDate.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+                self.gridLayoutDate.addWidget(self.labelDate, 1, 0, 1, 1)
+
                 
-            
-
-            self.verticalLayoutTodosFrame.addWidget(self.frameTodo)
-            i = i + 1
-
-        self.spacerItem = QSpacerItem(
-            20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.verticalLayoutTodosFrame.addItem(self.spacerItem)
+            item.setSizeHint(QSize(0, 60))
+            self.listWidgetTasks.addItem(item)
+            self.listWidgetTasks.setItemWidget(item, self.frameTodo)
 
     def populateTags(self):
         readLocalFile("tags")
@@ -213,17 +222,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def clearMainWindow(self):
         self.listWidgetTags.clear()
-        readLocalFile("todos")
-        todos = readLocalFile.data
-        for t in todos.values():
-
-            uid = t["UID"]
-            widget = self.todosFrame.findChild(QWidget, uid)
-            if widget != None:
-                widget.deleteLater()
-
-        self.verticalLayoutTodosFrame.removeItem(self.spacerItem)
-        self.scrollAreaTodosContents.update()
+        self.listWidgetTasks.clear()
 
     def syncData(self):
         # updates local tasks and tags with the lastest server version
@@ -236,7 +235,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def refreshGUI(self):
         self.clearMainWindow()
         self.populateTags()
-        self.populateTable(None, None, None, None)
+        self.populateTable("Sort", None, "Due Date", "Ascending")
 
     def sortTasks(self, byWhat, direction):
         self.clearMainWindow()
@@ -254,27 +253,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def editTagsDialog(self):
         dlg = EditTagsDialog()
         if dlg.exec():
-            self.clearMainWindow()
-            self.populateTags()
-            self.populateTable(None, None, None, None)
+            self.refreshGUI()
 
     def settingsDialog(self):
         dlg = SettingsDialog()
         dlg.exec()
 
     def taskDialog(self):
-
         if self.sender().objectName() == "pushButtonAdd":
             dlg = TaskDialog(None)
         else:
             uid = self.sender().objectName()[15:]
-            self.uidMoverDist[69] = uid
             dlg = TaskDialog(uid)
 
         if dlg.exec():
-            self.clearMainWindow()
-            self.populateTags()
-            self.populateTable(None, None, None, None)
+            self.refreshGUI()
 
 
 class EditTagsDialog(QDialog, Ui_EditTagDialog):
@@ -498,7 +491,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
 
 if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
+    app = QApplication(sys.argv)
     window = MainWindow()
     window.show()
     app.exec()
