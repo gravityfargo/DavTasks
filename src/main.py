@@ -63,7 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 rawDate = None
 
             self.frameTodo = QWidget()
-            self.frameTodo.setStyleSheet("background-color: rgb(30,30,30);")
+            # self.frameTodo.setStyleSheet("background-color: rgb(30,30,30);")
             self.frameTodo.setGeometry(QRect(0, 0, 16777215, 60))
 
             self.frameTodo.setObjectName(uid)
