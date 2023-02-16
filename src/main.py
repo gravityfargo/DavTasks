@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import sys
 from PyQt6.QtCore import QRect,  Qt, QSize
 from PyQt6.QtGui import QFont, QColor, QIcon
@@ -8,11 +7,10 @@ from davconnect import *
 from fileutils import *
 from syncutils import *
 from gui.edittask import *
+from workerThread import *
 from gui.edittags import *
 from gui.mainwindow import Ui_MainWindow
 from gui.settingsdialog import Ui_DialogSettings
-# from gui.notificationDialog import Ui_notificationDialog
-
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
@@ -23,16 +21,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populateTags()
         self.populateTable(None, None, None, None)
 
-        self.pushButtonAdd.clicked.connect(self.taskDialog)
+        # self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
-        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
-            self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
+        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
 
-        self.pushButtonSync.clicked.connect(self.syncData)
+        self.pushButtonSync.clicked.connect(self.syncDataThread)
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
-        self.listWidgetTags.itemPressed.connect(
-            lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
+        self.listWidgetTags.itemPressed.connect(lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
         self.pushButtonRefresh.clicked.connect(self.refreshGUI)
+
+
+    def syncDataThread(self):
+        self.pushButtonSync.setEnabled(False)
+        self.syncer = SyncWorker("All")
+        self.syncer.setTotalProgress.connect(self.progressBar.setMaximum)
+        self.syncer.setCurrentProgress.connect(self.progressBar.setValue)
+        self.syncer.setCurrentTask.connect(self.labelProgress.setText)
+        self.syncer.finished.connect(self.downloadFinished)
+        self.syncer.start()
+
+
+    def downloadFinished(self):
+        self.progressBar.setValue(self.progressBar.minimum())
+        self.labelProgress.setText("")
+        self.pushButtonSync.setEnabled(True)
+        self.refreshGUI()
+        del self.syncer
 
     def populateTable(self, sortOrFilter, filterBy, sortBy, sortDirection):
         # filterBy must be a tag
@@ -223,14 +237,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def clearMainWindow(self):
         self.listWidgetTags.clear()
         self.listWidgetTasks.clear()
-
-    def syncData(self):
-        # updates local tasks and tags with the lastest server version
-        # deletes no existant tasks in local and creates those that are missing
-        self.clearMainWindow()
-        serverSync("All")
-        self.populateTags()
-        self.populateTable(None, None, None, None)
 
     def refreshGUI(self):
         self.clearMainWindow()
