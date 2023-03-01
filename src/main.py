@@ -7,10 +7,11 @@ from davconnect import *
 from fileutils import *
 from syncutils import *
 from gui.edittask import *
-from workerThread import *
+from workerThreads import *
 from gui.edittags import *
 from gui.mainwindow import Ui_MainWindow
 from gui.settingsdialog import Ui_DialogSettings
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
@@ -19,29 +20,32 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setWindowTitle("DAV Tasks")
 
         self.populateTags()
-        self.populateTable(None, None, None, None)
+        self.populateTable("Sort", None, "Due Date", "Ascending")
 
-        # self.pushButtonAdd.clicked.connect(self.taskDialog)
+        self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
-        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
+        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
+            self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
 
-        self.pushButtonSync.clicked.connect(self.syncDataThread)
+        self.pushButtonSync.clicked.connect(lambda: self.syncDataThread("CalSync", "All", None))
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
-        self.listWidgetTags.itemPressed.connect(lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
+        self.listWidgetTags.itemPressed.connect(
+            lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
         self.pushButtonRefresh.clicked.connect(self.refreshGUI)
 
+        self.progressBar.hide()
 
-    def syncDataThread(self):
+    def syncDataThread(self, task, value1, value2):
         self.pushButtonSync.setEnabled(False)
-        self.syncer = SyncWorker("All")
+        self.syncer = SyncWorkers(task, value1, value2)
         self.syncer.setTotalProgress.connect(self.progressBar.setMaximum)
         self.syncer.setCurrentProgress.connect(self.progressBar.setValue)
         self.syncer.setCurrentTask.connect(self.labelProgress.setText)
         self.syncer.finished.connect(self.downloadFinished)
         self.syncer.start()
 
-
     def downloadFinished(self):
+        print("Finished")
         self.progressBar.setValue(self.progressBar.minimum())
         self.labelProgress.setText("")
         self.pushButtonSync.setEnabled(True)
@@ -67,7 +71,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         for t in todos.values():
 
             item = QListWidgetItem(self.listWidgetTasks)
-            
+
             uid = t["UID"]
             summary = t["SUMMARY"]
 
@@ -77,7 +81,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 rawDate = None
 
             self.frameTodo = QWidget()
-            # self.frameTodo.setStyleSheet("background-color: rgb(30,30,30);")
             self.frameTodo.setGeometry(QRect(0, 0, 16777215, 60))
 
             self.frameTodo.setObjectName(uid)
@@ -92,8 +95,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayoutTag.setContentsMargins(0, 0, 0, 0)
 
             self.frameTagColor = QFrame()
+            self.frameTagColor.setFixedSize(QtCore.QSize(15, 60))
             self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
-
+            
             self.labelTag = QLabel()
             self.labelTag.setStyleSheet("color: rgb(120, 120, 120);")
             self.gridLayoutTag.addWidget(self.labelTag, 0, 1, 1, 1)
@@ -138,7 +142,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frameDate = QFrame()
             self.gridLayoutTodo.addWidget(self.frameDate, 0, 3, 1, 1)
             self.gridLayoutDate = QGridLayout(self.frameDate)
-            
 
             self.pushButtonEdit = QPushButton()
             self.pushButtonEdit.clicked.connect(self.taskDialog)
@@ -150,10 +153,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayoutTodo.addWidget(self.pushButtonEdit, 0, 4, 1, 1)
 
             self.pushButtonComplete = QPushButton()
-            # self.pushButtonComplete.clicked.connect(self.taskDialog)
-            # self.pushButtonComplete.setObjectName("pushButtonEdit_" + uid)
+            self.pushButtonComplete.clicked.connect(self.completeTask)
+            self.pushButtonComplete.setObjectName("pushButtonCompleted_" + uid)
             self.pushButtonComplete.setFixedSize(QtCore.QSize(30, 60))
-            pushButtonCompleteIcon = qta.icon("fa.trash")
+            pushButtonCompleteIcon = qta.icon("fa5.check-circle")
             self.pushButtonComplete.setIcon(QIcon(pushButtonCompleteIcon))
             self.pushButtonComplete.setFlat(True)
             self.gridLayoutTodo.addWidget(self.pushButtonComplete, 0, 5, 1, 1)
@@ -166,8 +169,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayoutTodo.setColumnStretch(5, 1)
 
             if rawDate == None:
-                self.frameDuedays.setStyleSheet(
-                    "background-color: rgb(51, 51, 51);")
                 self.labelCountdown.setStyleSheet("color: rgb(51, 51, 51);")
 
             else:
@@ -200,20 +201,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         "background-color: rgb(204, 51, 0);")
                     self.labelCountdown.setText("Overdue")
 
-
                 self.labelDateDay = QLabel()
                 formattedDayofWeek = datetime.strftime(formattedDate, '%a')
                 self.labelDateDay.setText(formattedDayofWeek)
-                self.labelDateDay.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+                self.labelDateDay.setAlignment(
+                    Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
                 self.labelDateDay.setStyleSheet("color: rgb(120, 120, 120);")
                 self.gridLayoutDate.addWidget(self.labelDateDay, 0, 0, 1, 1)
 
                 self.labelDate = QLabel()
-                self.labelDate.setText(str(formattedDate.month) + "-" + str(formattedDate.day))
-                self.labelDate.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+                self.labelDate.setText(
+                    str(formattedDate.month) + "-" + str(formattedDate.day))
+                self.labelDate.setAlignment(
+                    Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
                 self.gridLayoutDate.addWidget(self.labelDate, 1, 0, 1, 1)
 
-                
             item.setSizeHint(QSize(0, 60))
             self.listWidgetTasks.addItem(item)
             self.listWidgetTasks.setItemWidget(item, self.frameTodo)
@@ -242,6 +244,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable("Sort", None, "Due Date", "Ascending")
+        # I really shouldnt do this here
+        tagCheck()
 
     def sortTasks(self, byWhat, direction):
         self.clearMainWindow()
@@ -255,6 +259,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.populateTable(None, None, None, None)
         else:
             self.populateTable("Filter", tag, None, None)
+
+    def completeTask(self):
+        uid = self.sender().objectName()[20:]
+        self.syncDataThread("CompleteTask", uid, None)
 
     def editTagsDialog(self):
         dlg = EditTagsDialog()
@@ -273,8 +281,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dlg = TaskDialog(uid)
 
         if dlg.exec():
-            self.refreshGUI()
-
+            # self.refreshGUI()
+            if(dlg.task == "CreateTask"):
+                self.syncDataThread("CreateTask", dlg.newTaskDict, dlg.newTaskCalendar)
+                print("Making Task exec")
+                
+            elif(dlg.task == "ModifyTask"):
+                self.syncDataThread("ModifyTask", dlg.moddedTask, dlg.moddedTaskCalendar)
 
 class EditTagsDialog(QDialog, Ui_EditTagDialog):
     def __init__(self, *args, obj=None, **kwargs):
@@ -383,8 +396,15 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
         self.populateCalendars()
 
+        self.newTaskDict = {}
+        self.newTaskCalendar = ""
+        self.task = ""
+        
+        self.moddedTask = {}
+        self.moddedTaskCalendar = ""
+
         saveButton = QPushButton("Save")
-        completeButton = QPushButton("Mark Complete")
+        # deleteButton = QPushButton("Delete")
         applyButton = QPushButton("Apply")
 
         self.dateEdit.setDate(date.today())
@@ -397,8 +417,8 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             self.comboBoxTags.setCurrentText("")
         else:
             self.setWindowTitle("DAV Tasks - Edit Task")
-            self.buttonBox.addButton(
-                completeButton, self.buttonBox.ButtonRole.DestructiveRole)
+            # self.buttonBox.addButton(
+                # deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
             self.buttonBox.addButton(
                 applyButton, self.buttonBox.ButtonRole.ApplyRole)
             self.populateTags()
@@ -406,48 +426,45 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
 
         self.checkBoxEnableCalendar.toggled.connect(self.toggleDatePicker)
         saveButton.clicked.connect(self.newTask)
-        completeButton.clicked.connect(lambda: self.completeTodo(uid))
+        # deleteButton.clicked.connect(lambda: self.completeTodo(uid))
         applyButton.clicked.connect(lambda: self.modifyTask(uid))
         self.buttonBox.rejected.connect(self.reject)
 
-    def completeTodo(self, uid):
-        completeTodoSync(uid)
-        self.accept()
-
     def modifyTask(self, uid):
-        cal = self.comboBoxCalendars.currentText()
-        moddedTask = {
+        self.moddedTaskCalendar = self.comboBoxCalendars.currentText()
+        self.moddedTask = {
             "SUMMARY": self.lineEditSummary.text(),
             "UID": uid
         }
 
         if self.comboBoxTags.currentText():
-            moddedTask['CATEGORIES'] = self.comboBoxTags.currentText()
+            self.moddedTask['CATEGORIES'] = self.comboBoxTags.currentText()
 
         if self.dateEdit.isEnabled():
             nDS = self.dateEdit.date().toPyDate()
             formattedDate = nDS.strftime("%Y-%m-%d %H:%M:%S")
-            moddedTask["DUE"] = formattedDate
+            self.moddedTask["DUE"] = formattedDate
 
-        modifyTodo(moddedTask, cal)
+        self.task = "ModifyTask"
         self.accept()
 
     def newTask(self):
 
-        cal = self.comboBoxCalendars.currentText()
-        newTask = {
+        self.newTaskCalendar = self.comboBoxCalendars.currentText()
+        self.newTaskDict = {
             "SUMMARY": self.lineEditSummary.text()
         }
 
         if self.comboBoxTags.currentText():
-            newTask['CATEGORIES'] = self.comboBoxTags.currentText()
+            self.newTaskDict['CATEGORIES'] = self.comboBoxTags.currentText()
 
         if self.dateEdit.isEnabled():
             nDS = self.dateEdit.date().toPyDate()
             formattedDate = nDS.strftime("%Y-%m-%d %H:%M:%S")
-            newTask["DUE"] = formattedDate
+            self.newTaskDict["DUE"] = formattedDate
 
-        createTodo(newTask, cal)
+        self.task = "CreateTask"
+
         self.accept()
 
     def toggleDatePicker(self):
