@@ -1,7 +1,8 @@
 from PyQt6.QtWidgets import QMessageBox, QColorDialog, QPushButton, QDialog
 from gui.settingsdialog import Ui_DialogSettings
-from gui.edittags import Ui_EditTagDialog
+from gui.edittags import *
 from gui.edittask import *
+from gui.multipurposeDialog import *
 from fileutils import *
 from davconnect import *
 
@@ -219,7 +220,6 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
                     self.lineEditSummary.setText(t["SUMMARY"])
 
     def populateTags(self):
-
         for t in self.tags:
             self.comboBoxTags.addItem(t)
 
@@ -228,3 +228,9 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             self.comboBoxCalendars.addItem(c)
         self.accept()
 
+class MultipurposeDialog(QDialog, Ui_MultipurposeDialog):
+    def __init__(self, *args, obj=None, **kwargs):
+        super(MultipurposeDialog, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+        self.buttonBox.rejected.connect(self.reject)
+        self.buttonBox.accepted.connect(self.accept)

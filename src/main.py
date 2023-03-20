@@ -20,7 +20,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populateTags()
         self.populateTable("Sort", None, "Due Date", "Ascending")
 
-        self.pushButtonAdd.clicked.connect(self.taskDialog)
+        # self.pushButtonAdd.clicked.connect(self.taskDialog)
+        self.pushButtonAdd.clicked.connect(self.multipurposeDialog)
+
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
         self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
             self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
@@ -286,6 +288,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 
             elif(dlg.task == "ModifyTask"):
                 self.syncDataThread("ModifyTask", dlg.moddedTask, dlg.moddedTaskCalendar)
+
+    def multipurposeDialog(self):
+        dlg = MultipurposeDialog()
+        dlg.exec()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
