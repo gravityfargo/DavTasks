@@ -3,13 +3,6 @@ from davconnect import *
 from icalendar.prop import vCategory, vDatetime
 import uuid
 
-
-# TODO if a completed task is modified, remove it from the completeTodos dict
-# and readd it to the main dict
-
-
-
-
 def tagCheck():
     readLocalFile("tags")
     tags = readLocalFile.data
@@ -36,7 +29,3 @@ def tagCheck():
     changeLocalData(None, "tags")
     changeLocalData(modifiedTags, "tags")
     print("Tag check completed.")
-
-
-
-
