@@ -229,7 +229,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         self.accept()
 
 class MultipurposeDialog(QDialog, Ui_MultipurposeDialog):
-    def __init__(self, *args, obj=None, **kwargs):
+    def __init__(self, title, description, *args, obj=None, **kwargs):
         super(MultipurposeDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
         self.buttonBox.rejected.connect(self.reject)

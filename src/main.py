@@ -20,14 +20,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.populateTags()
         self.populateTable("Sort", None, "Due Date", "Ascending")
 
-        # self.pushButtonAdd.clicked.connect(self.taskDialog)
-        self.pushButtonAdd.clicked.connect(self.multipurposeDialog)
-
+        self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
         self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
             self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
 
-        self.pushButtonSync.clicked.connect(lambda: self.syncDataThread("CalSync", "All", None))
+        self.pushButtonSync.clicked.connect(
+            lambda: self.syncDataThread("CalSync", "All", None))
         self.pushButtonSettings.clicked.connect(self.settingsDialog)
         self.listWidgetTags.itemPressed.connect(
             lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
@@ -97,7 +96,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.frameTagColor = QFrame()
             self.frameTagColor.setFixedSize(QtCore.QSize(15, 60))
             self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
-            
+
             self.labelTag = QLabel()
             self.labelTag.setStyleSheet("color: rgb(120, 120, 120);")
             self.gridLayoutTag.addWidget(self.labelTag, 0, 1, 1, 1)
@@ -280,18 +279,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             uid = self.sender().objectName()[15:]
             dlg = TaskDialog(uid)
 
-        if dlg.exec():
-            # self.refreshGUI()
-            if(dlg.task == "CreateTask"):
-                self.syncDataThread("CreateTask", dlg.newTaskDict, dlg.newTaskCalendar)
-                print("Making Task exec")
-                
-            elif(dlg.task == "ModifyTask"):
-                self.syncDataThread("ModifyTask", dlg.moddedTask, dlg.moddedTaskCalendar)
+        dlg.exec()
+        # self.refreshGUI()
+        if(dlg.task == "CreateTask"):
+            self.syncDataThread(
+                "CreateTask", dlg.newTaskDict, dlg.newTaskCalendar)
+            print("Making Task exec")
 
-    def multipurposeDialog(self):
+        elif(dlg.task == "ModifyTask"):
+            self.syncDataThread("ModifyTask", dlg.moddedTask,
+                                dlg.moddedTaskCalendar)
+
+    def multipurposeDialog(self, title, description):
         dlg = MultipurposeDialog()
         dlg.exec()
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
