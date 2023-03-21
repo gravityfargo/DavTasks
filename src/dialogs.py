@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QCheckBox, QColorDialog, QPushButton, QDialog, QDialogButtonBox
+from PyQt6.QtWidgets import QCheckBox, QColorDialog, QPushButton, QDialog, QDialogButtonBox, QFrame, QGridLayout, QFormLayout
 from PyQt6.QtCore import QSize
 from gui.settingsdialog import Ui_DialogSettings
 from gui.edittags import Ui_EditTagDialog
@@ -8,7 +8,6 @@ from fileutils import readLocalFile, changeLocalData
 from davconnect import getCalendars
 import traceback
 from datetime import date, datetime
-
 
 
 class EditTagsDialog(QDialog, Ui_EditTagDialog):
@@ -66,14 +65,19 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         readLocalFile("settings")
         self.settings = readLocalFile.data
         self.populateExistingSettings()
-        self.populateExistingCalendars()
+
+        self.defaultSaveButton = self.buttonBox.button(QDialogButtonBox.Save)
+
+        if (self.settings["CALENDARS"]):
+            self.pushButtonConnect.setEnabled(False)
+            self.populateCalendars()
+        else:
+            self.buttonBox.removeButton(self.defaultSaveButton)
+            self.comboBoxCalendars.setEnabled(False)
 
         self.pushButtonConnect.clicked.connect(self.saveServerSettings)
         self.buttonBox.rejected.connect(self.reject)
-        self.buttonBox.accepted.connect(self.accept)
-
-        self.defaultSaveButton = self.buttonBox.button(QDialogButtonBox.Save)
-        self.buttonBox.removeButton(self.defaultSaveButton)
+        self.buttonBox.accepted.connect(self.saveCalendarSettings)
 
     def populateExistingSettings(self):
         if self.settings["URL"] != "":
@@ -85,12 +89,17 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         if self.settings["PASSWORD"] != "":
             self.lineEditPass.setText(self.settings["PASSWORD"])
 
-    def populateExistingCalendars(self):
-        for c in self.settings["CALENDARS"]:
+    def populateCalendars(self):
+        readLocalFile("settings")
+        settings = readLocalFile.data
+
+        i = 0
+        for c in settings["CALENDARS"]:
             self.comboBoxCalendars.addItem(c)
-            self.checkBoxCal = QCheckBox(parent=self.verticalFrame)
-            self.checkBoxCal.setText(c)
-            self.verticalLayout.addWidget(self.checkBoxCal)
+            self.checkBox = QCheckBox(parent=self.gridWidget)
+            self.checkBox.setText(c)
+            self.gridLayoutCheckBoxes.addWidget(self.checkBox, i, 0, 1, 1)
+            i = i + 1
 
     def saveServerSettings(self):
         newSettings = {
@@ -106,19 +115,41 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
             newSettings["PASSWORD"] = self.lineEditPass.text()
             newSettings["CALENDARS"] = self.settings["CALENDARS"]
             changeLocalData(newSettings, "settings")
-            # I need to fix this error stuff. present the trace in the dialog
+
             try:
                 getCalendars()
-                self.populateExistingCalendars()
+                self.comboBoxCalendars.setEnabled(True)
                 self.buttonBox.addButton(QDialogButtonBox.Save)
+                self.populateCalendars()
             except Exception as a:
+                # need to fix this
                 multipurposeDialog(str(a))
+
         else:
             multipurposeDialog("All fields must be populated.")
 
+    def saveCalendarSettings(self):
 
-    # def saveCalendarSettings(self):
+        calendarsSelected = {
+        }
 
+        finalDict = {
+            "ENABLEDCALENDARS": calendarsSelected,
+            "DEFAULTCAL": self.comboBoxCalendars.currentText()
+        }
+        readLocalFile("settings")
+        settings = readLocalFile.data
+        allCalendars = settings["CALENDARS"]
+
+        for widgetchild in self.gridWidget.children():
+            if isinstance(widgetchild, QCheckBox):
+                if (widgetchild.isChecked() == True):
+                    print(widgetchild.text())
+                    calendarsSelected[widgetchild.text(
+                    )] = allCalendars[widgetchild.text()]
+
+        changeLocalData(finalDict, "settings")
+        self.accept()
 
 
 class TaskDialog(QDialog, Ui_EditTaskDialog):

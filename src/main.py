@@ -1,5 +1,5 @@
 import sys
-import datetime
+from datetime import datetime, date
 from PyQt6.QtCore import QRect,  Qt, QSize
 from PyQt6.QtGui import QFont, QColor, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFrame, QGridLayout, QWidget, QLabel, QPushButton
@@ -172,7 +172,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.labelCountdown.setStyleSheet("color: rgb(51, 51, 51);")
 
             else:
-                today = datetime.date.today()
+                today = date.today()
                 # 2023-02-04 17:00:00
                 formattedDate = datetime.strptime(rawDate, '%Y-%m-%d %H:%M:%S')
                 delta = formattedDate.date() - today
