@@ -1,10 +1,13 @@
-from PyQt6.QtWidgets import QMessageBox, QColorDialog, QPushButton, QDialog
+from PyQt6.QtWidgets import QCheckBox, QColorDialog, QPushButton, QDialog, QDialogButtonBox
+from PyQt6.QtCore import QSize
 from gui.settingsdialog import Ui_DialogSettings
-from gui.edittags import *
-from gui.edittask import *
-from gui.multipurposeDialog import *
-from fileutils import *
-from davconnect import *
+from gui.edittags import Ui_EditTagDialog
+from gui.edittask import Ui_EditTaskDialog
+from gui.multipurposeDialog import Ui_MultipurposeDialog
+from fileutils import readLocalFile, changeLocalData
+from davconnect import getCalendars
+import traceback
+from datetime import date, datetime
 
 
 
@@ -50,18 +53,29 @@ class EditTagsDialog(QDialog, Ui_EditTagDialog):
         changeLocalData(newSettings, "tags")
         self.accept()
 
+
+def settingsDialog():
+    dlg = SettingsDialog()
+    dlg.exec()
+
+
 class SettingsDialog(QDialog, Ui_DialogSettings):
     def __init__(self, *args, obj=None, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
         readLocalFile("settings")
         self.settings = readLocalFile.data
-        self.populateForm()
+        self.populateExistingSettings()
+        self.populateExistingCalendars()
 
+        self.pushButtonConnect.clicked.connect(self.saveServerSettings)
         self.buttonBox.rejected.connect(self.reject)
-        self.buttonBox.accepted.connect(self.saveServerSettings)
+        self.buttonBox.accepted.connect(self.accept)
 
-    def populateForm(self):
+        self.defaultSaveButton = self.buttonBox.button(QDialogButtonBox.Save)
+        self.buttonBox.removeButton(self.defaultSaveButton)
+
+    def populateExistingSettings(self):
         if self.settings["URL"] != "":
             self.lineEditURL.setText(self.settings["URL"])
 
@@ -71,31 +85,41 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         if self.settings["PASSWORD"] != "":
             self.lineEditPass.setText(self.settings["PASSWORD"])
 
+    def populateExistingCalendars(self):
+        for c in self.settings["CALENDARS"]:
+            self.comboBoxCalendars.addItem(c)
+            self.checkBoxCal = QCheckBox(parent=self.verticalFrame)
+            self.checkBoxCal.setText(c)
+            self.verticalLayout.addWidget(self.checkBoxCal)
+
     def saveServerSettings(self):
         newSettings = {
             "URL": "",
             "USERNAME": "",
             "PASSWORD": "",
-            "CALENDARS": ""
+            "CALENDARS": "",
+            "DEFAULTCAL": ""
         }
         if self.lineEditURL.text() and self.lineEditUser.text() and self.lineEditPass.text():
             newSettings["URL"] = self.lineEditURL.text()
             newSettings["USERNAME"] = self.lineEditUser.text()
             newSettings["PASSWORD"] = self.lineEditPass.text()
-            if "CALENDARS" in self.settings.keys():
-                newSettings["CALENDARS"] = self.settings["CALENDARS"]
-
+            newSettings["CALENDARS"] = self.settings["CALENDARS"]
             changeLocalData(newSettings, "settings")
-            getCalendars()
-            self.accept()
+            # I need to fix this error stuff. present the trace in the dialog
+            try:
+                getCalendars()
+                self.populateExistingCalendars()
+                self.buttonBox.addButton(QDialogButtonBox.Save)
+            except Exception as a:
+                multipurposeDialog(str(a))
         else:
-            self.warningDialog()
+            multipurposeDialog("All fields must be populated.")
 
-    def warningDialog(self):
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("DAV Tasks - Warning")
-        dlg.setText("All fields must be populated.")
-        dlg.exec()
+
+    # def saveCalendarSettings(self):
+
+
 
 class TaskDialog(QDialog, Ui_EditTaskDialog):
     def __init__(self, uid, *args, obj=None, **kwargs):
@@ -116,7 +140,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         self.newTaskDict = {}
         self.newTaskCalendar = ""
         self.task = ""
-        
+
         self.moddedTask = {}
         self.moddedTaskCalendar = ""
 
@@ -135,7 +159,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
         else:
             self.setWindowTitle("DAV Tasks - Edit Task")
             # self.buttonBox.addButton(
-                # deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
+            # deleteButton, self.buttonBox.ButtonRole.DestructiveRole)
             self.buttonBox.addButton(
                 applyButton, self.buttonBox.ButtonRole.ApplyRole)
             self.populateTags()
@@ -228,9 +252,16 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             self.comboBoxCalendars.addItem(c)
         self.accept()
 
+
+def multipurposeDialog(description):
+    dlg = MultipurposeDialog(description)
+    dlg.exec()
+
+
 class MultipurposeDialog(QDialog, Ui_MultipurposeDialog):
-    def __init__(self, title, description, *args, obj=None, **kwargs):
+    def __init__(self, description, *args, obj=None, **kwargs):
         super(MultipurposeDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
+        self.descriptionLabel.setText(description)
         self.buttonBox.rejected.connect(self.reject)
         self.buttonBox.accepted.connect(self.accept)

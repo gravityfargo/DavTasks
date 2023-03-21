@@ -3,9 +3,10 @@ import os
 from datetime import date, datetime
 
 dataFile = "./src/localData.json"
-settingsAr = {"URL": "", "USERNAME": "", "PASSWORD": "", "CALENDARS": "", "DEFAULTCAL": ""}
+settingsAr = {"URL": "", "USERNAME": "",
+              "PASSWORD": "", "CALENDARS": "", "ENABLEDCALENDARS": "", "DEFAULTCAL": ""}
 stockData = {"settings": settingsAr, "tags": {},
-             "todos": {}, "completedTodos": {}, "oldTags": ""}
+             "todos": {}, "completedTodos": {}, "oldTags": {}}
 
 # This takes a dictionary and updates the key in local json
 # changeLocalData(dict, key) commits the new dict to json for key

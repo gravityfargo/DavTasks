@@ -1,14 +1,15 @@
 import sys
+import datetime
 from PyQt6.QtCore import QRect,  Qt, QSize
 from PyQt6.QtGui import QFont, QColor, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFrame, QGridLayout, QWidget, QLabel, QPushButton
 import qtawesome as qta
 from davconnect import *
-from fileutils import *
-from syncutils import *
-from syncWorkers import *
+from fileutils import sortTodos, readLocalFile, filterByTags
+from syncutils import tagCheck
+from syncWorkers import SyncWorkers
 from gui.mainwindow import Ui_MainWindow
-from dialogs import *
+from dialogs import EditTagsDialog, settingsDialog, TaskDialog
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -27,7 +28,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.pushButtonSync.clicked.connect(
             lambda: self.syncDataThread("CalSync", "All", None))
-        self.pushButtonSettings.clicked.connect(self.settingsDialog)
+        self.pushButtonSettings.clicked.connect(settingsDialog)
         self.listWidgetTags.itemPressed.connect(
             lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
         self.pushButtonRefresh.clicked.connect(self.refreshGUI)
@@ -94,7 +95,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.gridLayoutTag.setContentsMargins(0, 0, 0, 0)
 
             self.frameTagColor = QFrame()
-            self.frameTagColor.setFixedSize(QtCore.QSize(15, 60))
+            self.frameTagColor.setFixedSize(QSize(15, 60))
             self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
 
             self.labelTag = QLabel()
@@ -145,7 +146,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.pushButtonEdit = QPushButton()
             self.pushButtonEdit.clicked.connect(self.taskDialog)
             self.pushButtonEdit.setObjectName("pushButtonEdit_" + uid)
-            self.pushButtonEdit.setFixedSize(QtCore.QSize(30, 60))
+            self.pushButtonEdit.setFixedSize(QSize(30, 60))
             pushButtonEditIcon = qta.icon("fa5.edit")
             self.pushButtonEdit.setIcon(QIcon(pushButtonEditIcon))
             self.pushButtonEdit.setFlat(True)
@@ -154,7 +155,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.pushButtonComplete = QPushButton()
             self.pushButtonComplete.clicked.connect(self.completeTask)
             self.pushButtonComplete.setObjectName("pushButtonCompleted_" + uid)
-            self.pushButtonComplete.setFixedSize(QtCore.QSize(30, 60))
+            self.pushButtonComplete.setFixedSize(QSize(30, 60))
             pushButtonCompleteIcon = qta.icon("fa5.check-circle")
             self.pushButtonComplete.setIcon(QIcon(pushButtonCompleteIcon))
             self.pushButtonComplete.setFlat(True)
@@ -171,7 +172,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.labelCountdown.setStyleSheet("color: rgb(51, 51, 51);")
 
             else:
-                today = date.today()
+                today = datetime.date.today()
                 # 2023-02-04 17:00:00
                 formattedDate = datetime.strptime(rawDate, '%Y-%m-%d %H:%M:%S')
                 delta = formattedDate.date() - today
@@ -268,10 +269,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if dlg.exec():
             self.refreshGUI()
 
-    def settingsDialog(self):
-        dlg = SettingsDialog()
-        dlg.exec()
-
     def taskDialog(self):
         if self.sender().objectName() == "pushButtonAdd":
             dlg = TaskDialog(None)
@@ -280,7 +277,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dlg = TaskDialog(uid)
 
         dlg.exec()
-        # self.refreshGUI()
         if(dlg.task == "CreateTask"):
             self.syncDataThread(
                 "CreateTask", dlg.newTaskDict, dlg.newTaskCalendar)
@@ -289,11 +285,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif(dlg.task == "ModifyTask"):
             self.syncDataThread("ModifyTask", dlg.moddedTask,
                                 dlg.moddedTaskCalendar)
-
-    def multipurposeDialog(self, title, description):
-        dlg = MultipurposeDialog()
-        dlg.exec()
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
