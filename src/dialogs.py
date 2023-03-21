@@ -93,12 +93,18 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         readLocalFile("settings")
         settings = readLocalFile.data
 
+        defaultCal = self.settings["DEFAULTCAL"]
+        self.comboBoxCalendars.addItem(defaultCal)
+
         i = 0
         for c in settings["CALENDARS"]:
-            self.comboBoxCalendars.addItem(c)
+            if (c != defaultCal):
+                self.comboBoxCalendars.addItem(c)
             self.checkBox = QCheckBox(parent=self.gridWidget)
             self.checkBox.setText(c)
             self.gridLayoutCheckBoxes.addWidget(self.checkBox, i, 0, 1, 1)
+            if (c in settings["ENABLEDCALENDARS"]):
+                self.checkBox.setChecked(True)
             i = i + 1
 
     def saveServerSettings(self):
