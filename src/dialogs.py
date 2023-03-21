@@ -129,7 +129,6 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
             multipurposeDialog("All fields must be populated.")
 
     def saveCalendarSettings(self):
-
         calendarsSelected = {
         }
 
@@ -144,7 +143,6 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         for widgetchild in self.gridWidget.children():
             if isinstance(widgetchild, QCheckBox):
                 if (widgetchild.isChecked() == True):
-                    print(widgetchild.text())
                     calendarsSelected[widgetchild.text(
                     )] = allCalendars[widgetchild.text()]
 
@@ -279,8 +277,11 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
             self.comboBoxTags.addItem(t)
 
     def populateCalendars(self):
+        defaultCal = self.settings["DEFAULTCAL"]
+        self.comboBoxCalendars.addItem(defaultCal)
         for c in self.settings["CALENDARS"]:
-            self.comboBoxCalendars.addItem(c)
+            if (c != defaultCal):
+                self.comboBoxCalendars.addItem(c)
         self.accept()
 
 
