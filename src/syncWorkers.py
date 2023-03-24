@@ -7,7 +7,6 @@ from davconnect import *
 from icalendar.prop import vCategory, vDatetime
 import uuid
 
-
 class SyncWorkers(QThread):
 
     setTotalProgress = pyqtSignal(int)
@@ -103,6 +102,7 @@ class SyncWorkers(QThread):
             self.syncCalendars(cal)
 
     def syncCalendars(self, whichCalendar):
+        
         readLocalFile("settings")
         settings = readLocalFile.data
 
@@ -123,7 +123,7 @@ class SyncWorkers(QThread):
         upstreamTagUidList = []
 
         if whichCalendar == "All":
-            for c in settings["CALENDARS"]:
+            for c in settings["ENABLEDCALENDARS"]:
                 calendarsToSync.append(str(c))
         else:
             calendarsToSync.append(whichCalendar)
@@ -283,15 +283,21 @@ class SyncWorkers(QThread):
             
     def createTodo(self, taskDict, cal):
         # self.setTotalProgress.emit(5)
+        
+        readLocalFile("todos")
+        tasks = readLocalFile.data
+        modifiedTasks = tasks.copy()
+
         self.setCurrentTask.emit("Creating Task")
-        print("Creating Task")
 
         serverConnect()
         calendar = serverConnect.my_principal.calendar(cal)
         assert len(taskDict) > 0
 
-        uidNew = str(uuid.uuid1())
+        uidNew = uuid.uuid1().__str__()
+
         taskDict["UID"] = uidNew
+
         if "LAST-MODIFIED" not in taskDict.keys():
             nDS = datetime.now()
             formattedDate = nDS.strftime("%Y-%m-%d %H:%M:%S")
@@ -301,22 +307,19 @@ class SyncWorkers(QThread):
             nDS = datetime.strptime(taskDict["DUE"], "%Y-%m-%d %H:%M:%S")
             formattedDate = nDS.date()
 
-        # TODO assigning a uid is broken in pydav, when it's fixed I'll have to reimplement
-        # create the todo locally and remotely w/o calling for a syncpull
-
         if "CATEGORIES" in taskDict.keys() and "DUE" in taskDict.keys():
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
                 due=formattedDate,
                 categories=[taskDict["CATEGORIES"]],
-                # uid=uidNew
+                uid=uidNew
             )
 
         elif "CATEGORIES" in taskDict.keys() and "DUE" not in taskDict.keys():
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
                 categories=[taskDict["CATEGORIES"]],
-                # uid=uidNew
+                uid=uidNew
             )
 
         elif "CATEGORIES" not in taskDict.keys() and "DUE" in taskDict.keys():
@@ -328,9 +331,10 @@ class SyncWorkers(QThread):
         else:
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
-                # uid=uidNew
+                uid=uidNew
             )
-        # remove when uid is fixed
-        
-        self.syncCalendars(cal)
+        modifiedTasks[uidNew] = taskDict
+        changeLocalData(None, "todos")
+        changeLocalData(modifiedTasks, "todos")
+
 
