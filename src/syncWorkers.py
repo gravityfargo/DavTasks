@@ -207,9 +207,8 @@ class SyncWorkers(QThread):
             self.setCurrentProgress.emit(numberOfCalendarsWorked)
             numberOfCalendarsWorked = numberOfCalendarsWorked + 1
 
-            # remove tasks marked completed upstream from todos dict
-            # then add them to the completedTodos dict
-            # TODO check if local completedTodos    are deleted from the server
+            # moves tasks marked completed upstream into the completedtasks dict
+            # if the task exists locally, but was deleted upstream, this deletes them locally.
             self.setCurrentTask.emit("Removing Completed Tasks")
 
             for uid, details in tasks.items():
@@ -227,6 +226,9 @@ class SyncWorkers(QThread):
                             if completedUID not in modifiedcompletedTasks.keys():
                                 modifiedcompletedTasks[completedUID] = tasks[completedUID]
                             del modifiedTasks[completedUID]
+                        else:
+                            del modifiedTasks[uid]
+
 
             upstreamTagUidList.clear()
 
@@ -296,8 +298,6 @@ class SyncWorkers(QThread):
 
         uidNew = uuid.uuid1().__str__()
 
-        taskDict["UID"] = uidNew
-
         if "LAST-MODIFIED" not in taskDict.keys():
             nDS = datetime.now()
             formattedDate = nDS.strftime("%Y-%m-%d %H:%M:%S")
@@ -333,7 +333,10 @@ class SyncWorkers(QThread):
                 summary=taskDict["SUMMARY"],
                 uid=uidNew
             )
+        taskDict["INCALENDAR"] = cal
+        taskDict["UID"] = uidNew
         modifiedTasks[uidNew] = taskDict
+        
         changeLocalData(None, "todos")
         changeLocalData(modifiedTasks, "todos")
 
