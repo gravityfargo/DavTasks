@@ -1,8 +1,6 @@
 import caldav
 import sys
-from datetime import date
-from datetime import datetime
-from fileutils import *
+from fileutils import readLocalFile, changeLocalData
 
 # We'll try to use the local caldav library, not the system-installed
 sys.path.insert(0, "..")
@@ -32,6 +30,3 @@ def getCalendars():
             calendarDict[c.name] = str(c.url)
             finalCalendarsDict["CALENDARS"] = calendarDict
             changeLocalData(finalCalendarsDict, "settings")
-    else:
-        print("your principal has no calendars")
-        # future warning dialog
