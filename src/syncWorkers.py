@@ -306,6 +306,7 @@ class SyncWorkers(QThread):
         assert len(taskDict) > 0
 
         uidNew = uuid.uuid1().__str__()
+        print(uidNew)
 
         if "LAST-MODIFIED" not in taskDict.keys():
             nDS = datetime.now()
@@ -321,14 +322,14 @@ class SyncWorkers(QThread):
                 summary=taskDict["SUMMARY"],
                 due=formattedDate,
                 categories=[taskDict["CATEGORIES"]],
-                uid=uidNew
+                # uid=uidNew
             )
 
         elif "CATEGORIES" in taskDict.keys() and "DUE" not in taskDict.keys():
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
                 categories=[taskDict["CATEGORIES"]],
-                uid=uidNew
+                # uid=uidNew
             )
 
         elif "CATEGORIES" not in taskDict.keys() and "DUE" in taskDict.keys():
@@ -340,7 +341,7 @@ class SyncWorkers(QThread):
         else:
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
-                uid=uidNew
+                # uid=uidNew
             )
         taskDict["INCALENDAR"] = cal
         taskDict["UID"] = uidNew
