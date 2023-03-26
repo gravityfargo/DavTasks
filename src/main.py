@@ -24,7 +24,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
         self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
-            self.comboBoxSortTasks.currentText(), self.comboBoxSortDirection.currentText()))
+            self.comboBoxSortTasks.currentText(), self.pushButtonSortOrder.objectName()))
 
         self.pushButtonSync.clicked.connect(
             lambda: self.syncDataThread("CalSync", "All", None))
@@ -34,6 +34,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         syncIcon = qta.icon("fa.refresh")
         self.pushButtonSync.setIcon(syncIcon)
+
+        buttonIcon = qta.icon("fa.arrow-up")
+        self.pushButtonSortOrder.setIcon(buttonIcon)
+        self.pushButtonSortOrder.setObjectName("Ascending")
+        self.pushButtonSortOrder.clicked.connect(self.toggleSortDirectionIcon)
 
         # Checks if the app has been synced in the last 4 hours before opening
         if (lastFullSyncCheck()):
@@ -251,6 +256,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.clearMainWindow()
         self.populateTags()
         self.populateTable("Sort", None, byWhat, direction)
+
+    def toggleSortDirectionIcon(self):
+        if (self.pushButtonSortOrder.objectName() == "Ascending"):
+            buttonIcon = qta.icon("fa.arrow-down")
+            self.pushButtonSortOrder.setIcon(buttonIcon)
+            self.pushButtonSortOrder.setObjectName("Decending")
+        else:
+            buttonIcon = qta.icon("fa.arrow-up")
+            self.pushButtonSortOrder.setIcon(buttonIcon)
+            self.pushButtonSortOrder.setObjectName("Ascending")
 
     def filterTag(self, tag):
         self.clearMainWindow()
