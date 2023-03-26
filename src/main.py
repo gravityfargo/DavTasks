@@ -31,15 +31,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.pushButtonSettings.clicked.connect(settingsDialog)
         self.listWidgetTags.itemPressed.connect(
             lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
-        self.pushButtonRefresh.clicked.connect(self.refreshGUI)
 
-        self.progressBar.hide()
+        syncIcon = qta.icon("fa.refresh")
+        self.pushButtonSync.setIcon(syncIcon)
 
     def syncDataThread(self, task, value1, value2):
         self.pushButtonSync.setEnabled(False)
         self.syncer = SyncWorkers(task, value1, value2)
-        self.syncer.setTotalProgress.connect(self.progressBar.setMaximum)
-        self.syncer.setCurrentProgress.connect(self.progressBar.setValue)
         self.syncer.setCurrentTask.connect(self.labelProgress.setText)
         self.syncer.finished.connect(self.downloadFinished)
         self.syncer.start()
@@ -277,14 +275,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             dlg = TaskDialog(uid)
 
         dlg.exec()
-        if(dlg.task == "CreateTask"):
+        if (dlg.task == "CreateTask"):
             self.syncDataThread(
                 "CreateTask", dlg.newTaskDict, dlg.newTaskCalendar)
             print("Making Task exec")
 
-        elif(dlg.task == "ModifyTask"):
+        elif (dlg.task == "ModifyTask"):
             self.syncDataThread("ModifyTask", dlg.moddedTask,
                                 dlg.moddedTaskCalendar)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

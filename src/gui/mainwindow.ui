@@ -80,18 +80,7 @@
         </widget>
        </item>
        <item row="0" column="4">
-        <widget class="QComboBox" name="comboBoxSortDirection">
-         <item>
-          <property name="text">
-           <string>Ascending</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Descending</string>
-          </property>
-         </item>
-        </widget>
+        <widget class="QComboBox" name="comboBoxSortDirection"/>
        </item>
       </layout>
      </widget>
@@ -150,14 +139,7 @@
           <property name="spacing">
            <number>0</number>
           </property>
-          <item row="0" column="0">
-           <widget class="QListWidget" name="listWidgetTags">
-            <property name="styleSheet">
-             <string notr="true">font: 14pt &quot;Noto Sans&quot;;</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
+          <item row="2" column="0">
            <widget class="QPushButton" name="pushButtonCompleted">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -169,6 +151,16 @@
              <string>Completed</string>
             </property>
            </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QListWidget" name="listWidgetTags">
+            <property name="styleSheet">
+             <string notr="true">font: 14pt &quot;Noto Sans&quot;;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QListWidget" name="listWidgetCalendars"/>
           </item>
          </layout>
         </widget>
@@ -183,8 +175,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>731</width>
-            <height>674</height>
+            <width>719</width>
+            <height>626</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayoutScrollAreaTodosContent">
@@ -233,18 +225,24 @@
         </spacer>
        </item>
        <item row="0" column="6">
-        <widget class="QPushButton" name="pushButtonRefresh">
+        <widget class="QPushButton" name="pushButtonSync">
          <property name="text">
-          <string>Refresh Table</string>
+          <string/>
          </property>
         </widget>
        </item>
-       <item row="0" column="7">
-        <widget class="QPushButton" name="pushButtonSync">
-         <property name="text">
-          <string>Sync With Server</string>
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item row="0" column="0">
         <widget class="QPushButton" name="pushButtonSettings">
@@ -265,32 +263,6 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
-        <widget class="QPushButton" name="pushButtonEditTags">
-         <property name="text">
-          <string>Edit Tags</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QProgressBar" name="progressBar">
-         <property name="minimumSize">
-          <size>
-           <width>150</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>150</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="3">
         <widget class="QLabel" name="labelProgress">
          <property name="text">
@@ -298,18 +270,12 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="pushButtonEditTags">
+         <property name="text">
+          <string>Edit Tags</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
       </layout>
      </widget>
