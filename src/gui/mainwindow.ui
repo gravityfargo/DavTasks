@@ -264,7 +264,7 @@
        <item row="0" column="0">
         <widget class="QPushButton" name="pushButtonSettings">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -276,7 +276,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Settings</string>
+          <string/>
          </property>
         </widget>
        </item>

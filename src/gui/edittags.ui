@@ -7,14 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>190</height>
+    <height>200</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dav Tasks - Edit Tags</string>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: rgb(18, 18, 18);</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="4" column="0" colspan="2">
