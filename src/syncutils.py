@@ -37,12 +37,11 @@ def tagCheck():
 def lastFullSyncCheck():
     readLocalFile("settings")
     settings = readLocalFile.data
-
     lastsync = settings["LASTSYNC"]
-    formattedLastSync = datetime.strptime(lastsync, '%Y-%m-%d %H:%M:%S')
-    now = datetime.now()
-
-    timeDifference = now - formattedLastSync
-
-    if (lastsync == "" or timeDifference > timedelta(hours=4)):
-        return True
+    if(lastsync != ""):
+    
+        formattedLastSync = datetime.strptime(lastsync, '%Y-%m-%d %H:%M:%S')
+        now = datetime.now()
+        timeDifference = now - formattedLastSync
+        if (timeDifference > timedelta(hours=4)):
+            return True
