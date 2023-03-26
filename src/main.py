@@ -2,7 +2,7 @@ import sys
 from datetime import datetime, date
 from PyQt6.QtCore import QRect,  Qt, QSize
 from PyQt6.QtGui import QFont, QColor, QIcon
-from PyQt6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFrame, QGridLayout, QWidget, QLabel, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFrame, QGridLayout, QWidget, QLabel, QPushButton, QVBoxLayout
 import qtawesome as qta
 from davconnect import *
 from fileutils import sortTodos, readLocalFile, filterByTags
@@ -85,27 +85,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 rawDate = None
 
-            self.frameTodo = QWidget()
-            self.frameTodo.setGeometry(QRect(0, 0, 16777215, 60))
+            
 
+            self.frameTodo = QWidget()
+            self.frameTodo.setMaximumHeight(90)
             self.frameTodo.setObjectName(uid)
 
-            self.gridLayoutTodo = QGridLayout(self.frameTodo)
-            self.gridLayoutTodo.setContentsMargins(0, 0, 0, 0)
-
-            self.frameTag = QFrame()
-            self.gridLayoutTodo.addWidget(self.frameTag, 0, 0, 1, 1)
-
-            self.gridLayoutTag = QGridLayout(self.frameTag)
-            self.gridLayoutTag.setContentsMargins(0, 0, 0, 0)
+            self.gridLayoutTodoContent = QGridLayout(self.frameTodo)
+            self.gridLayoutTodoContent.setContentsMargins(0, 0, 0, 0)
+        
 
             self.frameTagColor = QFrame()
-            self.frameTagColor.setFixedSize(QSize(15, 60))
-            self.gridLayoutTag.addWidget(self.frameTagColor, 0, 0, 1, 1)
+            self.frameTagColor.setFixedSize(QSize(10, 100))
+            self.gridLayoutTodoContent.addWidget(self.frameTagColor, 0, 0, 1, 1)
+
+            # Vertical Layout for the tag above the summary.
+            self.frameSummary = QFrame()
+            self.verticalLayoutSummary = QVBoxLayout(self.frameSummary)
+            self.verticalLayoutSummary.setSpacing(0)
+            self.gridLayoutTodoContent.addWidget(self.frameSummary, 0, 1, 1, 1)
 
             self.labelTag = QLabel()
             self.labelTag.setStyleSheet("color: rgb(120, 120, 120);")
-            self.gridLayoutTag.addWidget(self.labelTag, 0, 1, 1, 1)
+            self.labelTag.setMargin(0)
+            self.verticalLayoutSummary.addWidget(self.labelTag)
+            self.labelSummary = QLabel()
+            self.labelSummary.setText(summary)
+            self.labelSummary.setWordWrap(True)
+            self.labelSummary.setStyleSheet("font: 13pt \"Arial\";")
+            self.labelSummary.setContentsMargins(0, 0, 0, 0)
+            self.labelSummary.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+            self.verticalLayoutSummary.addWidget(self.labelSummary)
 
             if "CATEGORIES" in t:
                 tag = t["CATEGORIES"]
@@ -114,39 +124,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.frameTagColor.setStyleSheet(
                         "background-color: " + tags[tag] + ";")
 
-            self.frameSummary = QFrame()
-            self.gridLayoutSummary = QGridLayout(self.frameSummary)
-            self.gridLayoutSummary.setSpacing(0)
-            self.gridLayoutTodo.addWidget(self.frameSummary, 0, 1, 1, 1)
-
-            self.labelSummary = QLabel()
-            self.labelSummary.setText(summary)
-            self.labelSummary.setWordWrap(True)
-            self.labelSummary.setStyleSheet("font: 13pt \"Arial\";")
-            self.labelSummary.setContentsMargins(0, 0, 0, 0)
-            self.labelSummary.setAlignment(
-                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-            self.gridLayoutSummary.addWidget(self.labelSummary, 0, 0, 1, 1)
-
+            # Initialize the # of days
             self.frameDuedays = QFrame()
-            self.gridLayoutTodo.addWidget(self.frameDuedays, 0, 2, 1, 1)
-
-            self.gridLayoutCountdown = QGridLayout(self.frameDuedays)
-            self.gridLayoutCountdown.setContentsMargins(0, 0, 0, 0)
-
+            self.frameDuedays.setStyleSheet("background-color:rgba(0, 0, 0, 0.2);")
+            self.gridLayoutTodoContent.addWidget(self.frameDuedays, 0, 2, 1, 1)
+            self.frameDuedays.setMaximumWidth(80)
+            self.verticalLayoutDueDays = QVBoxLayout(self.frameDuedays)
+            self.verticalLayoutDueDays.setSpacing(0)
+            # countdown
             self.labelCountdown = QLabel()
-            font = QFont()
-            font.setBold(True)
-            self.labelCountdown.setFont(font)
-            self.labelCountdown.setStyleSheet(
-                "color: rgb(0, 0, 0); font: 12pt;")
-            self.gridLayoutCountdown.addWidget(self.labelCountdown, 0, 0, 1, 1)
-            self.labelCountdown.setAlignment(
-                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
-
+            self.verticalLayoutDueDays.addWidget(self.labelCountdown)
+            self.labelCountdown.autoFillBackground
+            self.labelCountdown.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+            # date
             self.frameDate = QFrame()
-            self.gridLayoutTodo.addWidget(self.frameDate, 0, 3, 1, 1)
+            self.gridLayoutTodoContent.addWidget(self.frameDate, 0, 3, 1, 1)
+            self.frameDate.setMaximumWidth(80)
             self.gridLayoutDate = QGridLayout(self.frameDate)
+
+
+            self.frameButtons = QFrame()
+            self.frameButtons.setMaximumWidth(80)
+            self.verticalLayoutButtons = QVBoxLayout(self.frameButtons)
+            self.verticalLayoutButtons.setSpacing(0)
+            self.gridLayoutTodoContent.addWidget(self.frameButtons, 0, 4, 1, 1)
+
 
             self.pushButtonEdit = QPushButton()
             self.pushButtonEdit.clicked.connect(self.taskDialog)
@@ -155,7 +157,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pushButtonEditIcon = qta.icon("fa5.edit")
             self.pushButtonEdit.setIcon(QIcon(pushButtonEditIcon))
             self.pushButtonEdit.setFlat(True)
-            self.gridLayoutTodo.addWidget(self.pushButtonEdit, 0, 4, 1, 1)
+            self.verticalLayoutButtons.addWidget(self.pushButtonEdit)
 
             self.pushButtonComplete = QPushButton()
             self.pushButtonComplete.clicked.connect(self.completeTask)
@@ -164,46 +166,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pushButtonCompleteIcon = qta.icon("fa5.check-circle")
             self.pushButtonComplete.setIcon(QIcon(pushButtonCompleteIcon))
             self.pushButtonComplete.setFlat(True)
-            self.gridLayoutTodo.addWidget(self.pushButtonComplete, 0, 5, 1, 1)
+            self.verticalLayoutButtons.addWidget(self.pushButtonComplete)
 
-            self.gridLayoutTodo.setColumnStretch(0, 1)
-            self.gridLayoutTodo.setColumnStretch(1, 6)
-            self.gridLayoutTodo.setColumnStretch(2, 1)
-            self.gridLayoutTodo.setColumnStretch(3, 1)
-            self.gridLayoutTodo.setColumnStretch(4, 1)
-            self.gridLayoutTodo.setColumnStretch(5, 1)
-
-            if rawDate == None:
-                self.labelCountdown.setStyleSheet("color: rgb(51, 51, 51);")
-
-            else:
+            if rawDate != None:
                 today = date.today()
-                # 2023-02-04 17:00:00
                 formattedDate = datetime.strptime(rawDate, '%Y-%m-%d %H:%M:%S')
                 delta = formattedDate.date() - today
                 self.labelCountdown.setText(str(delta.days))
                 if delta.days == 0:
-                    self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(204,51,0);")
+                    self.labelCountdown.setStyleSheet(
+                        "color: rgb(204,51,0);")
                 if delta.days == 1:
-                    self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(255,153,102);")
+                    self.labelCountdown.setStyleSheet(
+                        "color: rgb(255,153,102);")
                 if delta.days == 2:
-                    self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(255,204,0);")
+                    self.labelCountdown.setStyleSheet(
+                        "color: rgb(255,204,0);")
                 if delta.days == 3:
-                    self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(153,204,51);")
+                    self.labelCountdown.setStyleSheet(
+                        "color: rgb(153,204,51);")
                 if delta.days > 3 and delta.days <= 30:
-                    self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(51, 153, 0);")
+                    self.labelCountdown.setStyleSheet(
+                        "color: rgb(51, 153, 0);")
                 if delta.days > 30:
-                    self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(51, 153, 0);")
+                    self.labelCountdown.setStyleSheet(
+                        "color: rgb(51, 153, 0);")
                     self.labelCountdown.setText("30+")
                 if delta.days < 0:
-                    self.frameDuedays.setStyleSheet(
-                        "background-color: rgb(204, 51, 0);")
+                    self.labelCountdown.setStyleSheet(
+                        "color: rgb(204, 51, 0);")
                     self.labelCountdown.setText("Overdue")
 
                 self.labelDateDay = QLabel()
@@ -212,16 +203,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.labelDateDay.setAlignment(
                     Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
                 self.labelDateDay.setStyleSheet("color: rgb(120, 120, 120);")
-                self.gridLayoutDate.addWidget(self.labelDateDay, 0, 0, 1, 1)
+                # self.gridLayoutDate.addWidget(self.labelDateDay, 0, 0, 1, 1)
 
                 self.labelDate = QLabel()
                 self.labelDate.setText(
                     str(formattedDate.month) + "-" + str(formattedDate.day))
                 self.labelDate.setAlignment(
                     Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
-                self.gridLayoutDate.addWidget(self.labelDate, 1, 0, 1, 1)
+                # self.gridLayoutDate.addWidget(self.labelDate, 1, 0, 1, 1)
 
-            item.setSizeHint(QSize(0, 60))
+            item.setSizeHint(QSize(0, 90))
             self.listWidgetTasks.addItem(item)
             self.listWidgetTasks.setItemWidget(item, self.frameTodo)
 
