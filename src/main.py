@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFrame, 
 import qtawesome as qta
 from davconnect import *
 from fileutils import sortTodos, readLocalFile, filterByTags
-from syncutils import tagCheck
+from syncutils import tagCheck, lastFullSyncCheck
 from syncWorkers import SyncWorkers
 from gui.mainwindow import Ui_MainWindow
 from dialogs import EditTagsDialog, settingsDialog, TaskDialog
@@ -35,6 +35,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         syncIcon = qta.icon("fa.refresh")
         self.pushButtonSync.setIcon(syncIcon)
 
+        # Checks if the app has been synced in the last 4 hours before opening
+        if (lastFullSyncCheck()):
+            self.syncDataThread("CalSync", "All", None)
+
     def syncDataThread(self, task, value1, value2):
         self.pushButtonSync.setEnabled(False)
         self.syncer = SyncWorkers(task, value1, value2)
@@ -43,8 +47,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.syncer.start()
 
     def downloadFinished(self):
-        print("Finished")
-        self.progressBar.setValue(self.progressBar.minimum())
         self.labelProgress.setText("")
         self.pushButtonSync.setEnabled(True)
         self.refreshGUI()

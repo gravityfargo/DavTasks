@@ -6,6 +6,9 @@ from fileutils import *
 from davconnect import *
 from icalendar.prop import vCategory, vDatetime
 import uuid
+from syncutils import tagCheck
+import time
+
 
 class SyncWorkers(QThread):
 
@@ -16,7 +19,7 @@ class SyncWorkers(QThread):
 
     def __init__(self, task, value1, value2):
         super().__init__()
-        
+
         self.value1 = value1
         self.value2 = value2
         self.task = task
@@ -27,9 +30,9 @@ class SyncWorkers(QThread):
         #               - <AnyCalendar>
 
         # Task:     completeTask
-        # Value1:   
+        # Value1:
         # Value2:   UID
-        
+
         # Task:     TaskModify
         # Value1:   taskDict
         # Value2:   UID
@@ -39,20 +42,20 @@ class SyncWorkers(QThread):
         # Value2:   calendar
 
     def run(self):
-        if(self.task == "CalSync"):
-            if(self.value1 == "All"):
+        if (self.task == "CalSync"):
+            if (self.value1 == "All"):
                 self.syncCalendars("All")
                 self.setCurrentTask.emit("Syncing All Calendars")
 
-        if(self.task == "CompleteTask"):
-                self.markTaskCompleteUpstream(self.value1)
-                self.setCurrentTask.emit("Marking task complete.")
-     
-        if(self.task == "CreateTask"):
+        if (self.task == "CompleteTask"):
+            self.markTaskCompleteUpstream(self.value1)
+            self.setCurrentTask.emit("Marking task complete.")
+
+        if (self.task == "CreateTask"):
             self.createTodo(self.value1, self.value2)
             self.setCurrentTask.emit("Creating Task")
-            
-        if(self.task == "ModifyTask"):
+
+        if (self.task == "ModifyTask"):
             self.modifyTask(self.value1, self.value2)
             self.setCurrentTask.emit("Modifying Task.")
 
@@ -77,7 +80,8 @@ class SyncWorkers(QThread):
                 curretTask["SUMMARY"], taskToModify["SUMMARY"])
 
             if "DUE" in taskToModify.keys():
-                nDS = datetime.strptime(taskToModify["DUE"], "%Y-%m-%d %H:%M:%S")
+                nDS = datetime.strptime(
+                    taskToModify["DUE"], "%Y-%m-%d %H:%M:%S")
                 formattedDate = vDatetime(nDS).to_ical()
                 task.icalendar_component["DTSTART"] = formattedDate
                 task.icalendar_component["DUE"] = formattedDate
@@ -102,9 +106,10 @@ class SyncWorkers(QThread):
             self.syncCalendars(cal)
 
     def syncCalendars(self, whichCalendar):
-        
+
         readLocalFile("settings")
         settings = readLocalFile.data
+        newSettings = settings.copy()
 
         readLocalFile("tags")
         tags = readLocalFile.data
@@ -123,14 +128,19 @@ class SyncWorkers(QThread):
         upstreamTagUidList = []
 
         if whichCalendar == "All":
+            self.setCurrentTask.emit("Starting a full sync.")
+            time.sleep(1)
             for c in settings["ENABLEDCALENDARS"]:
                 calendarsToSync.append(str(c))
+
+            # Adds a timestamp in json indicating when the last full calendar sync was.
+            nDS = datetime.now()
+            formattedDate = nDS.strftime("%Y-%m-%d %H:%M:%S")
+            newSettings["LASTSYNC"] = formattedDate
+
         else:
             calendarsToSync.append(whichCalendar)
 
-        self.setTotalProgress.emit(len(calendarsToSync))
-
-        numberOfCalendarsWorked = 1
         for calendar in calendarsToSync:
             self.setCurrentTask.emit("Syncing Calendar " + calendar)
             serverConnect()
@@ -204,13 +214,9 @@ class SyncWorkers(QThread):
 
                     newTask["INCALENDAR"] = str(calendar)
                     modifiedTasks[upstreamUID] = newTask
-            self.setCurrentProgress.emit(numberOfCalendarsWorked)
-            numberOfCalendarsWorked = numberOfCalendarsWorked + 1
 
             # moves tasks marked completed upstream into the completedtasks dict
-            # if the task exists locally, but was deleted upstream, this deletes them locally.
-            self.setCurrentTask.emit("Removing Completed Tasks")
-
+            # if the task exists locally, but was deleted upstream, this deletes them locally. (only for the current calendar in the for loop)
             for uid, details in tasks.items():
 
                 if details["INCALENDAR"] == str(calendar):
@@ -229,17 +235,21 @@ class SyncWorkers(QThread):
                         else:
                             del modifiedTasks[uid]
 
-
             upstreamTagUidList.clear()
 
+        # This checks all of the tasks in json if they are in a calendar that is currently enabled. If the calendar isn't enabled, it deletes the task.
+        for uid, details in tasks.items():
+            if details["INCALENDAR"] not in calendarsToSync:
+                del modifiedTasks[uid]
+
+        changeLocalData(newSettings, "settings")
         changeLocalData(None, "completedTodos")
         changeLocalData(modifiedcompletedTasks, "completedTodos")
         changeLocalData(None, "todos")
         changeLocalData(modifiedTasks, "todos")
-        # changeLocalData(None, "tags")
-        # changeLocalData(modifiedTags, "tags")
-        # TODO: redo the tag check
-        # tagCheck()
+        tagCheck()
+        self.setCurrentTask.emit("Sync Complete.")
+        time.sleep(1)
         self.succeeded.emit()
 
     def markTaskCompleteUpstream(self, uid):
@@ -257,7 +267,8 @@ class SyncWorkers(QThread):
         modifiedCompletedTodos = completedTodos.copy()
 
         serverConnect()
-        calendar = serverConnect.my_principal.calendar(curretTask["INCALENDAR"])
+        calendar = serverConnect.my_principal.calendar(
+            curretTask["INCALENDAR"])
 
         taskFetched = calendar.search(
             todo=True,
@@ -267,7 +278,7 @@ class SyncWorkers(QThread):
             self.setCurrentTask.emit("Task not on server.")
         else:
             task = taskFetched[0]
-        
+
             self.setCurrentProgress.emit(1)
             self.setCurrentTask.emit("Task found.")
             modifiedCompletedTodos[uid] = curretTask
@@ -281,11 +292,9 @@ class SyncWorkers(QThread):
             changeLocalData(None, "completedTodos")
             changeLocalData(modifiedCompletedTodos, "completedTodos")
             self.setCurrentTask.emit("Task marked completed")
-            # self.setCurrentProgress.emit(1)
-            
+
+    # Creates a new todo from a dictionary and adds it to local json and creates the task on the server.
     def createTodo(self, taskDict, cal):
-        # self.setTotalProgress.emit(5)
-        
         readLocalFile("todos")
         tasks = readLocalFile.data
         modifiedTasks = tasks.copy()
@@ -336,8 +345,6 @@ class SyncWorkers(QThread):
         taskDict["INCALENDAR"] = cal
         taskDict["UID"] = uidNew
         modifiedTasks[uidNew] = taskDict
-        
+
         changeLocalData(None, "todos")
         changeLocalData(modifiedTasks, "todos")
-
-
