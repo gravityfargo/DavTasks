@@ -43,6 +43,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Checks if the app has been synced in the last 4 hours before opening
         if (lastFullSyncCheck()):
             self.syncDataThread("CalSync", "All", None)
+            
+        tagCheck()
 
     def syncDataThread(self, task, value1, value2):
         self.pushButtonSync.setEnabled(False)
@@ -54,6 +56,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def downloadFinished(self):
         self.labelProgress.setText("")
         self.pushButtonSync.setEnabled(True)
+        self.clearMainWindow()
         self.refreshGUI()
         del self.syncer
 
@@ -294,8 +297,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if (dlg.task == "CreateTask"):
             self.syncDataThread(
                 "CreateTask", dlg.newTaskDict, dlg.newTaskCalendar)
-            print("Making Task exec")
-
+            
         elif (dlg.task == "ModifyTask"):
             self.syncDataThread("ModifyTask", dlg.moddedTask,
                                 dlg.moddedTaskCalendar)

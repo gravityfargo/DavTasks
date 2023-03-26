@@ -14,9 +14,15 @@ class EditTagsDialog(QDialog, Ui_EditTagDialog):
     def __init__(self, *args, obj=None, **kwargs):
         super(EditTagsDialog, self).__init__(*args, **kwargs)
         self.setupUi(self)
+        
         readLocalFile("tags")
-
         self.tags = readLocalFile.data
+        self.modifiedTags = self.tags.copy()
+        
+        readLocalFile("oldTags")
+        self.oldTags = readLocalFile.data
+        self.modifiedOldTags = self.tags.copy()
+        
         self.pushButtonColorPicker.clicked.connect(self.onColorPicker)
         self.buttonBox.accepted.connect(self.saveTagColor)
         self.populateTags()
@@ -45,11 +51,14 @@ class EditTagsDialog(QDialog, Ui_EditTagDialog):
 
     def saveTagColor(self):
         inputTag = self.comboBoxTags.currentText()
-        newSettings = {}
-        for x, y in self.tags.items():
-            if x == inputTag:
-                newSettings[x] = self.widgetColorPreview.objectName()
-        changeLocalData(newSettings, "tags")
+        for tag, y in self.tags.items():
+            if tag == inputTag:
+                self.modifiedTags[tag] = self.widgetColorPreview.objectName()
+                self.modifiedOldTags[tag] = self.widgetColorPreview.objectName()
+        changeLocalData(None, "tags")
+        changeLocalData(self.modifiedTags, "tags")
+        changeLocalData(None, "oldTags")
+        changeLocalData(self.modifiedOldTags, "oldTags")
         self.accept()
 
 
