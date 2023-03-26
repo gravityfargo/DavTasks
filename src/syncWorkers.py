@@ -322,26 +322,26 @@ class SyncWorkers(QThread):
                 summary=taskDict["SUMMARY"],
                 due=formattedDate,
                 categories=[taskDict["CATEGORIES"]],
-                # uid=uidNew
+                uid=uidNew
             )
 
         elif "CATEGORIES" in taskDict.keys() and "DUE" not in taskDict.keys():
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
                 categories=[taskDict["CATEGORIES"]],
-                # uid=uidNew
+                uid=uidNew
             )
 
         elif "CATEGORIES" not in taskDict.keys() and "DUE" in taskDict.keys():
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
                 due=formattedDate,
-                # uid=uidNew
+                uid=uidNew
             )
         else:
             calendar.save_todo(
                 summary=taskDict["SUMMARY"],
-                # uid=uidNew
+                uid=uidNew
             )
         taskDict["INCALENDAR"] = cal
         taskDict["UID"] = uidNew
