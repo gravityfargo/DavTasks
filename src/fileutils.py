@@ -2,7 +2,8 @@ import json
 import os
 from datetime import date, datetime
 
-dataFile = "./src/localData.json"
+# dataFile = "./src/localData.json"
+dataFile = os.path.expanduser('~/.DavTasksData.json')
 settingsAr = {"URL": "", "USERNAME": "",
               "PASSWORD": "", "CALENDARS": "", "ENABLEDCALENDARS": "", "DEFAULTCAL": "", "LASTSYNC": ""}
 stockData = {"settings": settingsAr, "tags": {},
