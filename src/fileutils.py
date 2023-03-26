@@ -65,9 +65,11 @@ def readLocalFile(key):
 def sortTodos(byWhat, direction):
     readLocalFile("todos")
     todos = readLocalFile.data
-
+    
     if byWhat == "Due Date":
         deltaList = []
+        newTaskDict = {}
+        # goes through each todo, and if it has a due date, adds the delta to a list.
         for t in todos.values():
             if "DUE" in t.keys():
                 rawDate = t["DUE"]
@@ -80,8 +82,7 @@ def sortTodos(byWhat, direction):
                 delta = formattedDate.date() - today
                 deltaList.append(delta.days)
 
-        if direction == "Ascending":
-            newTaskDict = {}
+        if direction == "Ascending": 
             deltaList.sort()
             i = 0
 
@@ -104,8 +105,8 @@ def sortTodos(byWhat, direction):
                                 del todos[key]
 
         if direction == "Descending":
-            newTaskDict = {}
             deltaList.sort(reverse=True)
+
             for x in deltaList:
                 for key, value in todos.copy().items():
                     if "DUE" in value.keys():

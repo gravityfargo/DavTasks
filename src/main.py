@@ -15,31 +15,30 @@ from dialogs import EditTagsDialog, settingsDialog, TaskDialog
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self, *args, obj=None, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+        # Populate UI
         self.setupUi(self)
         self.setWindowTitle("DAV Tasks")
-
         self.populateTags()
         self.populateTable("Sort", None, "Due Date", "Ascending")
+        
+        # UI Template Changes
+        syncIcon = qta.icon("fa.refresh")
+        settingsIcon = qta.icon("fa.cog")
+        buttonIcon = qta.icon("fa.arrow-up")
+        self.pushButtonSync.setIcon(syncIcon)
+        self.pushButtonSettings.setIcon(settingsIcon)
+        self.pushButtonSortOrder.setIcon(buttonIcon)
+        self.pushButtonSortOrder.setObjectName("Ascending")
+        self.listWidgetTags.setStyleSheet("font-size: 18px;")
 
+        # Button Connections
         self.pushButtonAdd.clicked.connect(self.taskDialog)
         self.pushButtonEditTags.clicked.connect(self.editTagsDialog)
-        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(
-            self.comboBoxSortTasks.currentText(), self.pushButtonSortOrder.objectName()))
-
+        self.pushButtonSortTags.clicked.connect(lambda: self.sortTasks(self.comboBoxSortTasks.currentText(), self.pushButtonSortOrder.objectName()))
         self.pushButtonSync.clicked.connect(lambda: self.syncDataThread("CalSync", "All", None))
         self.pushButtonSettings.clicked.connect(settingsDialog)
         self.listWidgetTags.itemPressed.connect(lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
-
-        syncIcon = qta.icon("fa.refresh")
-        self.pushButtonSync.setIcon(syncIcon)
-        
-        settingsIcon = qta.icon("fa.cog")
-        self.pushButtonSettings.setIcon(settingsIcon)
-
-        buttonIcon = qta.icon("fa.arrow-up")
-        self.pushButtonSortOrder.setIcon(buttonIcon)
-        self.pushButtonSortOrder.setObjectName("Ascending")
-        self.pushButtonSortOrder.clicked.connect(self.toggleSortDirectionIcon)
+        self.pushButtonSortOrder.clicked.connect(self.toggleSortDirectionIcon)        
 
         # Checks if the app has been synced in the last 4 hours before opening
         if (lastFullSyncCheck()):
@@ -145,6 +144,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.verticalLayoutDueDays.addWidget(self.labelCountdown)
             self.labelCountdown.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
 
+            # Frame
+            self.frameDate = QFrame()
+            self.gridLayoutTodoContent.addWidget(self.frameDate, 0, 3, 1, 1)
+            self.frameDate.setMaximumWidth(80)
+            self.gridLayoutDate = QGridLayout(self.frameDate)
+            
             if rawDate != None:
                 today = date.today()
                 formattedDate = datetime.strptime(rawDate, '%Y-%m-%d %H:%M:%S')
@@ -174,26 +179,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         "color: rgb(204, 51, 0);")
                     self.labelCountdown.setText("Overdue")
 
-            # Frame
-            self.frameDate = QFrame()
-            self.gridLayoutTodoContent.addWidget(self.frameDate, 0, 3, 1, 1)
-            self.frameDate.setMaximumWidth(80)
-            self.gridLayoutDate = QGridLayout(self.frameDate)
+                # Day
+                self.labelDateDay = QLabel()
+                formattedDayofWeek = datetime.strftime(formattedDate, '%a')
+                self.labelDateDay.setText(formattedDayofWeek)
+                self.labelDateDay.setStyleSheet("color: rgba(255, 255, 255, 0.5);")
+                self.labelDateDay.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+                self.gridLayoutDate.addWidget(self.labelDateDay, 0, 0, 1, 1)
 
-            # Day
-            self.labelDateDay = QLabel()
-            formattedDayofWeek = datetime.strftime(formattedDate, '%a')
-            self.labelDateDay.setText(formattedDayofWeek)
-            self.labelDateDay.setStyleSheet("color: rgba(255, 255, 255, 0.5);")
-            self.labelDateDay.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
-            self.gridLayoutDate.addWidget(self.labelDateDay, 0, 0, 1, 1)
-
-            # Date
-            self.labelDate = QLabel()
-            self.labelDate.setText(str(formattedDate.month) + "-" + str(formattedDate.day))
-            self.labelDate.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
-            self.labelDate.setStyleSheet("border-top: 2px solid rgba(0,0,0,0.2); padding-top: 6;")
-            self.gridLayoutDate.addWidget(self.labelDate, 1, 0, 1, 1)
+                # Date
+                self.labelDate = QLabel()
+                self.labelDate.setText(str(formattedDate.month) + "-" + str(formattedDate.day))
+                self.labelDate.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+                self.labelDate.setStyleSheet("border-top: 2px solid rgba(0,0,0,0.2); padding-top: 6;")
+                self.gridLayoutDate.addWidget(self.labelDate, 1, 0, 1, 1)
 
             # Frame
             self.frameButtons = QFrame()
@@ -227,17 +226,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def populateTags(self):
         readLocalFile("tags")
         tags = readLocalFile.data
-        item = QListWidgetItem()
-        item.setText("All Tags")
-        self.listWidgetTags.addItem(item)
+        itemTag = QListWidgetItem()
+        itemTag.setText("All Tags")
+        self.listWidgetTags.addItem(itemTag)
         for t in tags:
-            item = QListWidgetItem()
-            item.setText(t)
+            itemTag = QListWidgetItem()
+            itemTag.setText(t)
 
             if len(tags[t]) != 0:
-                item.setForeground(QColor().black())
-                item.setBackground(QColor(tags[t]))
-            self.listWidgetTags.addItem(item)
+                itemTag.setForeground(QColor().black())
+                itemTag.setBackground(QColor(tags[t]))
+            self.listWidgetTags.addItem(itemTag)
         self.listWidgetTags.sortItems(Qt.SortOrder.AscendingOrder)
 
     def clearMainWindow(self):
@@ -260,11 +259,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if (self.pushButtonSortOrder.objectName() == "Ascending"):
             buttonIcon = qta.icon("fa.arrow-down")
             self.pushButtonSortOrder.setIcon(buttonIcon)
-            self.pushButtonSortOrder.setObjectName("Decending")
+            self.pushButtonSortOrder.setObjectName("Descending")
         else:
             buttonIcon = qta.icon("fa.arrow-up")
             self.pushButtonSortOrder.setIcon(buttonIcon)
             self.pushButtonSortOrder.setObjectName("Ascending")
+
 
     def filterTag(self, tag):
         self.clearMainWindow()
