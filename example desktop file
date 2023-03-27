@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=DavTasks
+Version=v0.1
+Icon=task-list-symbolic
+Exec=/bin/python /home/$USER/Development/DavTasks/src/main.py
+Terminal=false
+Type=Application
