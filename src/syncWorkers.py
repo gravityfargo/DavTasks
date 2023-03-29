@@ -305,7 +305,7 @@ class SyncWorkers(QThread):
         calendar = serverConnect.my_principal.calendar(cal)
         assert len(taskDict) > 0
 
-        uidNew = uuid.uuid1().__str__()
+        uidNew = str(uuid.uuid4())
         print(uidNew)
 
         if "LAST-MODIFIED" not in taskDict.keys():
