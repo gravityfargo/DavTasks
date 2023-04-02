@@ -1,6 +1,17 @@
+import sys
+import subprocess
+import pkg_resources
 import json
 import os
 from datetime import date, datetime
+
+# Make sure deps are installed
+requiredPackages = {'caldav==1.2.1'}
+installed = {pkg.key for pkg in pkg_resources.working_set}
+missing = requiredPackages - installed
+
+if missing:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing])
 
 configFile = os.path.expanduser('~/.local/share/DavTasks/data.json')
 configPath = os.path.expanduser('~/.local/share/DavTasks')
