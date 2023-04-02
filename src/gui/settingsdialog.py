@@ -21,7 +21,7 @@ class Ui_DialogSettings(object):
         self.gridLayout = QtWidgets.QGridLayout(DialogSettings)
         self.gridLayout.setObjectName("gridLayout")
         self.buttonBox = QtWidgets.QDialogButtonBox(parent=DialogSettings)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Save)
+        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.StandardButton.Cancel|QtWidgets.QDialogButtonBox.StandardButton.Reset|QtWidgets.QDialogButtonBox.StandardButton.Save)
         self.buttonBox.setObjectName("buttonBox")
         self.gridLayout.addWidget(self.buttonBox, 1, 0, 1, 1)
         self.formLayout = QtWidgets.QFormLayout()

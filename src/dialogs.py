@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QCheckBox, QColorDialog, QPushButton, QDialog, QDialogButtonBox, QFrame, QGridLayout, QFormLayout
+from PyQt6.QtWidgets import QCheckBox, QColorDialog, QLineEdit, QPushButton, QDialog, QDialogButtonBox, QFrame, QGridLayout, QFormLayout
 from PyQt6.QtCore import QSize
 from gui.settingsdialog import Ui_DialogSettings
 from gui.edittags import Ui_EditTagDialog
@@ -75,16 +75,19 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         self.settings = readLocalFile.data
         self.populateExistingSettings()
 
-        self.defaultSaveButton = self.buttonBox.button(QDialogButtonBox.Save)
+        self.saveButton = self.buttonBox.button(QDialogButtonBox.Save)
+        self.resetButton = self.buttonBox.button(QDialogButtonBox.Reset)
 
         if (self.settings["CALENDARS"]):
             self.pushButtonConnect.setEnabled(False)
             self.populateCalendars()
         else:
-            self.buttonBox.removeButton(self.defaultSaveButton)
+            self.buttonBox.removeButton(self.saveButton)
+            self.buttonBox.removeButton(self.resetButton)
             self.comboBoxCalendars.setEnabled(False)
 
         self.pushButtonConnect.clicked.connect(self.saveServerSettings)
+        self.resetButton.clicked.connect(self.clearForms)
         self.buttonBox.rejected.connect(self.reject)
         self.buttonBox.accepted.connect(self.saveCalendarSettings)
 
@@ -164,6 +167,26 @@ class SettingsDialog(QDialog, Ui_DialogSettings):
         changeLocalData(finalDict, "settings")
         self.accept()
 
+    def clearForms(self):
+        self.buttonBox.removeButton(self.saveButton)
+        self.buttonBox.removeButton(self.resetButton)
+        self.comboBoxCalendars.setEnabled(False)
+        self.comboBoxCalendars.clear()
+        self.pushButtonConnect.setEnabled(True)
+        self.lineEditUser.clear()
+        self.lineEditPass.clear()
+        self.lineEditURL.clear()
+        newSettings = {
+            "URL": "",
+            "USERNAME": "",
+            "PASSWORD": "",
+            "CALENDARS": "",
+            "DEFAULTCAL": ""
+        }
+        childWidgets = self.gridWidget.findChildren(QCheckBox)
+        for child in childWidgets:
+            self.gridLayoutCheckBoxes.removeWidget(child)
+        changeLocalData(newSettings, "settings")
 
 class TaskDialog(QDialog, Ui_EditTaskDialog):
     def __init__(self, uid, *args, obj=None, **kwargs):
