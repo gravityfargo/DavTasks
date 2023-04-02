@@ -1,10 +1,24 @@
+import sys
+import subprocess
+import pkg_resources
 import json
 import os
 from datetime import date, datetime
 
-dataFile = "./src/localData.json"
+# Make sure deps are installed
+requiredPackages = {'caldav==1.2.1'}
+installed = {pkg.key for pkg in pkg_resources.working_set}
+missing = requiredPackages - installed
+
+if missing:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing])
+
+configFile = os.path.expanduser('~/.local/share/DavTasks/data.json')
+configPath = os.path.expanduser('~/.local/share/DavTasks')
+
 settingsAr = {"URL": "", "USERNAME": "",
               "PASSWORD": "", "CALENDARS": "", "ENABLEDCALENDARS": "", "DEFAULTCAL": "", "LASTSYNC": ""}
+
 stockData = {"settings": settingsAr, "tags": {},
              "todos": {}, "completedTodos": {}, "oldTags": {}}
 
@@ -13,40 +27,38 @@ stockData = {"settings": settingsAr, "tags": {},
 # changeLocalData(None, key) commits a blank dict to json for key
 
 
-def changeLocalData(dict, key):
-    if os.path.exists(dataFile):
+def changeLocalData(dict: dict, key: str):
+    if os.path.exists(configFile):
         if dict == None:
             emptyDict = {}
-            with open(dataFile, "r") as read_content:
+            with open(configFile, "r") as read_content:
                 localdata = json.load(read_content)
                 localdata[key] = emptyDict
-                with open(dataFile, "w") as outfile:
+                with open(configFile, "w") as outfile:
                     json.dump(localdata, outfile, indent=4)
 
         if dict != None:
-            with open(dataFile, "r") as read_content:
+            with open(configFile, "r") as read_content:
                 localdata = json.load(read_content)
                 if key in localdata.keys():
                     localdata[key].update(dict)
-                    with open(dataFile, "w") as outfile:
+                    with open(configFile, "w") as outfile:
                         json.dump(localdata, outfile, indent=4)
 
                 else:
                     data = {key: dict}
-                    with open(dataFile, "w") as outfile:
+                    with open(configFile, "w") as outfile:
                         json.dump(data, outfile, indent=4)
 
     else:
-        with open(dataFile, "w") as outfile:
-            json.dump(stockData, outfile, indent=4)
-
-# This reads the dict or list from local json
+        createConfig()
 
 
-def readLocalFile(key):
+# This reads local json
+def readLocalFile(key: str):
     readLocalFile.data = {}
-    if os.path.exists(dataFile):
-        with open(dataFile, "r") as read_content:
+    if os.path.exists(configFile):
+        with open(configFile, "r") as read_content:
             localdata = json.load(read_content)
 
             if key in localdata.keys():
@@ -54,18 +66,25 @@ def readLocalFile(key):
             else:
                 print("No key to load")
     else:
-        with open(dataFile, "w") as outfile:
+        createConfig()
+
+
+def createConfig():
+    if not os.path.exists(configFile):
+        os.makedirs(configPath)
+        with open(configFile, "w") as outfile:
+
             json.dump(stockData, outfile, indent=4)
+    else:
+        json.dump(stockData, outfile, indent=4)
 
 
 # seach for a todo in the local json by uid, then delete the number assigned to it
 # then rebuild the array and renumber the remaining todos
-
-
-def sortTodos(byWhat, direction):
+def sortTodos(byWhat: str, direction: str):
     readLocalFile("todos")
     todos = readLocalFile.data
-    
+
     if byWhat == "Due Date":
         deltaList = []
         newTaskDict = {}
@@ -82,7 +101,7 @@ def sortTodos(byWhat, direction):
                 delta = formattedDate.date() - today
                 deltaList.append(delta.days)
 
-        if direction == "Ascending": 
+        if direction == "Ascending":
             deltaList.sort()
             i = 0
 

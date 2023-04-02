@@ -14,7 +14,6 @@ def serverConnect():
         with caldav.DAVClient(
             url=settings["URL"], username=settings["USERNAME"], password=settings["PASSWORD"]
         ) as client:
-
             serverConnect.my_principal = client.principal()
 
 
@@ -27,6 +26,8 @@ def getCalendars():
     changeLocalData(finalCalendarsDict, "settings")
     if calendars:
         for c in calendars:
-            calendarDict[c.name] = str(c.url)
-            finalCalendarsDict["CALENDARS"] = calendarDict
-            changeLocalData(finalCalendarsDict, "settings")
+            acceptable_component_types = c.get_supported_components()
+            if 'VTODO' in acceptable_component_types:
+                calendarDict[c.name] = str(c.url)
+                finalCalendarsDict["CALENDARS"] = calendarDict
+                changeLocalData(finalCalendarsDict, "settings")
