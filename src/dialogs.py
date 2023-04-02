@@ -317,7 +317,7 @@ class TaskDialog(QDialog, Ui_EditTaskDialog):
     def populateCalendars(self):
         defaultCal = self.settings["DEFAULTCAL"]
         self.comboBoxCalendars.addItem(defaultCal)
-        for c in self.settings["CALENDARS"]:
+        for c in self.settings["ENABLEDCALENDARS"]:
             if (c != defaultCal):
                 self.comboBoxCalendars.addItem(c)
         self.accept()
