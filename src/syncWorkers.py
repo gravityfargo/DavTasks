@@ -343,8 +343,8 @@ class SyncWorkers(QThread):
                 uid=uidNew
             )
         taskDict["INCALENDAR"] = cal
-        taskDict["UID"] = uidNew
-        modifiedTasks[uidNew] = taskDict
+        taskDict["UID"] = str(uidNew)
+        modifiedTasks[str(uidNew)] = taskDict
 
         changeLocalData(None, "todos")
         changeLocalData(modifiedTasks, "todos")
