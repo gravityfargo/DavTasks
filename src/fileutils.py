@@ -27,6 +27,15 @@ stockData = {"settings": settingsAr, "tags": {},
 # changeLocalData(None, key) commits a blank dict to json for key
 
 
+def checkLocalData():
+    if os.path.exists(configFile):
+        with open(configFile) as file:
+            # checks if the file is empty
+            if not file.read(1):
+                print("4")
+                createConfig()
+
+
 def changeLocalData(dict: dict, key: str):
     if os.path.exists(configFile):
         if dict == None:
@@ -49,7 +58,6 @@ def changeLocalData(dict: dict, key: str):
                     data = {key: dict}
                     with open(configFile, "w") as outfile:
                         json.dump(data, outfile, indent=4)
-
     else:
         createConfig()
 
@@ -64,19 +72,25 @@ def readLocalFile(key: str):
             if key in localdata.keys():
                 readLocalFile.data = localdata[key]
             else:
-                print("No key to load")
+                return False
     else:
         createConfig()
 
 
 def createConfig():
-    if not os.path.exists(configFile):
-        os.makedirs(configPath)
-        with open(configFile, "w") as outfile:
+    # remove an existing config
+    # if this function is called, expect a fresh json file
+    if os.path.isfile(configFile):
+        print("Exists")
+        os.remove(configFile)
 
+    # create config if it doesnt exist
+    if not os.path.isfile(configFile):
+        # check if the path exists
+        if not os.path.exists(configPath):
+            os.makedirs(configPath)
+        with open(configFile, "w") as outfile:
             json.dump(stockData, outfile, indent=4)
-    else:
-        json.dump(stockData, outfile, indent=4)
 
 
 # seach for a todo in the local json by uid, then delete the number assigned to it

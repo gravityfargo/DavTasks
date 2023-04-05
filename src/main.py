@@ -5,7 +5,7 @@ from PyQt6.QtGui import QFont, QColor, QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QListWidgetItem, QFrame, QGridLayout, QWidget, QLabel, QPushButton, QVBoxLayout
 import qtawesome as qta
 from davconnect import *
-from fileutils import sortTodos, readLocalFile, filterByTags
+from fileutils import sortTodos, readLocalFile, filterByTags, checkLocalData
 from syncutils import tagCheck, lastFullSyncCheck
 from syncWorkers import SyncWorkers
 from gui.mainwindow import Ui_MainWindow
@@ -18,8 +18,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Populate UI
         self.setupUi(self)
         self.setWindowTitle("DAV Tasks")
-        self.populateTags()
-        self.populateTable("Sort", None, "Due Date", "Ascending")
         
         # UI Template Changes
         syncIcon = qta.icon("fa.refresh")
@@ -40,11 +38,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.listWidgetTags.itemPressed.connect(lambda: self.filterTag(self.listWidgetTags.currentItem().text()))
         self.pushButtonSortOrder.clicked.connect(self.toggleSortDirectionIcon)        
 
-        # Checks if the app has been synced in the last 4 hours before opening
-        if (lastFullSyncCheck()):
-            self.syncDataThread("CalSync", "All", None)
-            
+        
+        # Only populate the gui if theres data to be populated
+        # if the config is a blank file, this deletes it and makes a fresh one
+        checkLocalData()
+
+        self.populateTags()
+        self.populateTable("Sort", None, "Due Date", "Ascending")
         tagCheck()
+        # Checks if the app has been synced within the last 4 hours. Syncs if not
+        if (lastFullSyncCheck()):
+            self.syncDataThread("CalSync", "All", None)      
+        
 
     def syncDataThread(self, task, value1, value2):
         self.pushButtonSync.setEnabled(False)
