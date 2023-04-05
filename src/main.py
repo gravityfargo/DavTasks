@@ -53,6 +53,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def syncDataThread(self, task, value1, value2):
         self.pushButtonSync.setEnabled(False)
+        self.pushButtonAdd.setEnabled(False)
         self.syncer = SyncWorkers(task, value1, value2)
         self.syncer.setCurrentTask.connect(self.labelProgress.setText)
         self.syncer.finished.connect(self.downloadFinished)
@@ -61,6 +62,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def downloadFinished(self):
         self.labelProgress.setText("")
         self.pushButtonSync.setEnabled(True)
+        self.pushButtonAdd.setEnabled(True)
         self.clearMainWindow()
         self.refreshGUI()
         del self.syncer
@@ -228,6 +230,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 item.setSizeHint(QSize(0, 70))
                 self.listWidgetTasks.addItem(item)
                 self.listWidgetTasks.setItemWidget(item, self.frameTodo)
+                i = i + 1
+        self.labelNumberOfTasks.setText(str(i))
 
     def populateTags(self):
         readLocalFile("tags")
