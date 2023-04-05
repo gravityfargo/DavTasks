@@ -60,6 +60,8 @@ class SyncWorkers(QThread):
             self.setCurrentTask.emit("Modifying Task.")
 
     def modifyTask(self, taskToModify, cal):
+        self.setCurrentTask.emit("Modifying Task.")
+
         readLocalFile("todos")
         tasks = readLocalFile.data
         modifiedTasks = tasks.copy()
@@ -102,7 +104,9 @@ class SyncWorkers(QThread):
             task.save()
 
             changeLocalData(None, "todos")
-            changeLocalData(modifiedTasks, "todos")
+            changeLocalData(modifiedTasks, "todos")            
+            self.setCurrentTask.emit("Modification Complete.")
+
             self.syncCalendars(cal)
 
     def syncCalendars(self, whichCalendar):
@@ -150,7 +154,7 @@ class SyncWorkers(QThread):
             for t in todos:
                 upstreamTask = t.icalendar_component
                 upstreamUID = upstreamTask["UID"].to_ical().decode()
-
+                # Check if a task exists on server and locally, accepts the last modified version.
                 if upstreamUID in keys:
                     upstreamTagUidList.append(upstreamUID)
                     if "LAST-MODIFIED" in upstreamTask.keys():
@@ -186,7 +190,7 @@ class SyncWorkers(QThread):
 
                         localTask["INCALENDAR"] = str(calendar)
                         modifiedTasks[upstreamUID] = localTask
-
+                # Task exists on server but not locallaly, so make it. 
                 elif upstreamUID not in keys:
                     upstreamTagUidList.append(upstreamUID)
                     newTask = {}
@@ -238,8 +242,9 @@ class SyncWorkers(QThread):
             upstreamTagUidList.clear()
 
         # This checks all of the tasks in json if they are in a calendar that is currently enabled. If the calendar isn't enabled, it deletes the task.
+        enabledCalendars = settings["ENABLEDCALENDARS"]
         for uid, details in tasks.items():
-            if details["INCALENDAR"] not in calendarsToSync:
+            if details["INCALENDAR"] not in enabledCalendars:
                 del modifiedTasks[uid]
 
         changeLocalData(newSettings, "settings")
