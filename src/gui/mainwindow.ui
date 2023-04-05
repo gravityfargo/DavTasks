@@ -214,8 +214,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>779</width>
-            <height>626</height>
+            <width>789</width>
+            <height>658</height>
            </rect>
           </property>
           <layout class="QGridLayout" name="gridLayoutScrollAreaTodosContent">
@@ -250,26 +250,6 @@
        <enum>QFrame::Raised</enum>
       </property>
       <layout class="QGridLayout" name="gridLayout_4">
-       <item row="0" column="4">
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="0" column="6">
-        <widget class="QPushButton" name="pushButtonSync">
-         <property name="text">
-          <string/>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="2">
         <spacer name="horizontalSpacer">
          <property name="orientation">
@@ -302,6 +282,26 @@
          </property>
         </widget>
        </item>
+       <item row="0" column="4">
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="pushButtonEditTags">
+         <property name="text">
+          <string>Edit Tags</string>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="3">
         <widget class="QLabel" name="labelProgress">
          <property name="text">
@@ -309,10 +309,24 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="pushButtonEditTags">
+       <item row="0" column="5">
+        <widget class="QLabel" name="labelNumberOfTasks">
          <property name="text">
-          <string>Edit Tags</string>
+          <string>X</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
+        <widget class="QPushButton" name="pushButtonSync">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Tasks</string>
          </property>
         </widget>
        </item>
